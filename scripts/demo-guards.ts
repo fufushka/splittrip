@@ -90,6 +90,14 @@ try {
     run('git commit -m "feat(money): демо брудного коміту"', repo),
   ]);
 
+  // 2b. Формат правильний, але лінт — ні: відмову дає саме ESLint (C2).
+  reset();
+  writeFileSync(file('src/modules/money/lint.ts'), 'export var legacy = 1;\n');
+  must('git add src/modules/money/lint.ts', repo);
+  report('02b-lint-commit-rejected', 'коміт із порушенням лінту за правильного формату', true, [
+    run('git commit -m "feat(money): демо порушення лінту"', repo),
+  ]);
+
   // 3. Повідомлення коміту не за стандартом (C4).
   reset();
   report('03-bad-commit-message-rejected', 'коміт із повідомленням не за стандартом', true, [
