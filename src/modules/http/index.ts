@@ -19,7 +19,9 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
         response: {
           200: {
             type: 'object',
-            properties: { status: { type: 'string', const: 'ok' } },
+            // Без `const`: серіалізатор підставив би 'ok' замість реального значення
+            // й приховав би зламаний стан від smoke-тесту (reports/05).
+            properties: { status: { type: 'string' } },
             required: ['status'],
           },
         },
