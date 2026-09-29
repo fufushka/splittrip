@@ -16,7 +16,10 @@
     "format:check": "prettier --check \"**/*.{ts,js,cjs,json}\"",
     "lint": "eslint --max-warnings=0 .",
     "boundaries": "depcruise src --config .dependency-cruiser.cjs",
-    "smoke": "node --test test/smoke/*.test.ts"
+    "smoke": "node --test test/smoke/*.test.ts",
+    "hygiene": "node scripts/check-hygiene.ts",
+    "commit-msg": "node scripts/check-commit-msg.ts",
+    "ai-trace": "node scripts/ai-trace.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
