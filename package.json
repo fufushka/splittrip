@@ -21,7 +21,8 @@
     "commit-msg": "node scripts/check-commit-msg.ts",
     "ai-trace": "node scripts/ai-trace.ts",
     "prepare": "husky",
-    "pre-commit": "lint-staged && npm run hygiene"
+    "pre-commit": "lint-staged && npm run hygiene",
+    "demo": "node scripts/demo-guards.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

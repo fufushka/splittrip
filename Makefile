@@ -2,7 +2,7 @@
 # логіка — у package.json. Перелік перевірок — standarts/checks.md.
 
 .PHONY: install check format format-check lint hygiene typecheck boundaries build smoke \
-	ai-trace pre-commit commit-msg pre-push
+	ai-trace demo pre-commit commit-msg pre-push
 
 ## Встановити залежності й підключити git-hook-и (крит. 6)
 install:
@@ -46,3 +46,7 @@ commit-msg:
 	npm run commit-msg -- "$(MSG)"
 
 pre-push: typecheck boundaries build smoke
+
+## Відтворювана демонстрація відмов hook-ів і меж (звіти в reports/)
+demo:
+	npm run demo
