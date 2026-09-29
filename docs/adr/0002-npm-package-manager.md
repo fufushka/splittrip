@@ -1,5 +1,5 @@
 ---
-status: запропоновано
+status: прийнято
 date: 2026-09-29
 decision-makers: Dima Pustolyakov
 ---
