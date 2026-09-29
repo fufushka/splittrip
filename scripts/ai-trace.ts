@@ -23,7 +23,12 @@ function promptFiles(): string[] {
     .sort();
 }
 
-const lines = [`# Слід ШІ (HEAD ${git(['rev-parse', '--short', 'HEAD']).trim()})`, ''];
+const lines = [
+  `# Слід ШІ (HEAD ${git(['rev-parse', '--short', 'HEAD']).trim()})`,
+  '',
+  'Відтворити: `make ai-trace`. Коміти без трейлера `AI-Prompt` автор зробив сам.',
+  '',
+];
 for (const prompt of promptFiles()) {
   const commits = git([
     'log',
