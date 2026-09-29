@@ -14,6 +14,20 @@ export default defineConfig(
     },
   },
   {
+    // describe/it з node:test повертають проміси, які раннер обробляє сам.
+    files: ['test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': [
+        'error',
+        {
+          allowForKnownSafeCalls: [
+            { from: 'package', package: 'node:test', name: ['describe', 'it', 'test', 'suite'] },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.js', '**/*.cjs'],
     extends: [tseslint.configs.disableTypeChecked],
   },
