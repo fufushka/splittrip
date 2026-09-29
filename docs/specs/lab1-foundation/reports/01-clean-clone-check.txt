@@ -1,21 +1,22 @@
 # Відтворити: make demo (сценарій «чистий клон: make install && make check»)
 # Очікування: успіх; результат: OK
+# HEAD: 4ff91b5a77d574b7b6dcfcd8e7fca255c5d09498
 
 $ make install
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm ci
 
 > splittrip@0.1.0 prepare
 > husky
 
 
-added 190 packages, and audited 191 packages in 6s
+added 190 packages, and audited 191 packages in 4s
 
 64 packages are looking for funding
   run `npm fund` for details
 
 found 0 vulnerabilities
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 [код виходу: 0]
 
 $ git config core.hooksPath
@@ -23,7 +24,7 @@ $ git config core.hooksPath
 [код виходу: 0]
 
 $ make check
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run format:check
 
 > splittrip@0.1.0 format:check
@@ -66,12 +67,12 @@ npm run smoke
 > node --test test/smoke/*.test.ts
 
 ▶ smoke: зібраний застосунок
-  ✔ зібраний вхід dist/main.js існує (0.7214ms)
-  ✔ стартує й відповідає на /health (3332.2461ms)
-  ✔ /version повертає sha поточного коміту (501.3893ms)
-  ✔ /version повертає APP_VERSION, якщо її задано (324.0367ms)
-  ✔ /version повертає unknown без git, а застосунок усе одно стартує (340.5318ms)
-✔ smoke: зібраний застосунок (4500.0477ms)
+  ✔ зібраний вхід dist/main.js існує (0.758ms)
+  ✔ стартує й відповідає на /health (2159.8852ms)
+  ✔ /version повертає sha поточного коміту (391.2408ms)
+  ✔ /version повертає APP_VERSION, якщо її задано (449.3746ms)
+  ✔ /version повертає unknown без git, а застосунок усе одно стартує (340.2261ms)
+✔ smoke: зібраний застосунок (3342.5524ms)
 ℹ tests 5
 ℹ suites 1
 ℹ pass 5
@@ -79,6 +80,6 @@ npm run smoke
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 4657.8496
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+ℹ duration_ms 3462.359
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 [код виходу: 0]

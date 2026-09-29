@@ -1,15 +1,16 @@
 # Відтворити: make demo (сценарій «коміт із порушенням лінту за правильного формату»)
 # Очікування: відмова; результат: OK
+# HEAD: 4ff91b5a77d574b7b6dcfcd8e7fca255c5d09498
 
 $ git commit -m "feat(money): демо порушення лінту"
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run pre-commit
 
 > splittrip@0.1.0 pre-commit
 > lint-staged && npm run hygiene
 
 ⋯ Backing up original state…
-✔ Done backing up original state (1e3b104)!
+✔ Done backing up original state (a5409cb)!
 ⋯ Running tasks for staged files…
     *.{ts,js,cjs} — 1 file
       ⋯ prettier --check
@@ -27,11 +28,11 @@ npm run pre-commit
 
 ✖ eslint --max-warnings=0:
 
-C:\Users\dimau\AppData\Local\Temp\splittrip-demo-egoRd9\repo\src\modules\money\lint.ts
+C:\Users\dimau\AppData\Local\Temp\splittrip-demo-P9nkte\repo\src\modules\money\lint.ts
   1:8  error  Unexpected var, use let or const instead  no-var
 
 ✖ 1 problem (1 error, 0 warnings)
 make[1]: *** [Makefile:43: pre-commit] Error 1
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 husky - pre-commit script failed (code 2)
 [код виходу: 1]

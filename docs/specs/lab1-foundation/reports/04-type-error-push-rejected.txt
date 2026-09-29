@@ -1,17 +1,18 @@
-# Відтворити: make demo (сценарій «пуш зі зламаною збіркою»)
+# Відтворити: make demo (сценарій «пуш із помилкою типів»)
 # Очікування: відмова; результат: OK
+# HEAD: 4ff91b5a77d574b7b6dcfcd8e7fca255c5d09498
 
-$ git commit -m "feat(money): демо зламаної збірки"
-[feature/lab1-foundation 9de431a] feat(money): демо зламаної збірки
+$ git commit -m "feat(money): демо помилки типів"
+[feature/lab1-foundation 6916761] feat(money): демо помилки типів
  1 file changed, 2 insertions(+)
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run pre-commit
 
 > splittrip@0.1.0 pre-commit
 > lint-staged && npm run hygiene
 
 ⋯ Backing up original state…
-✔ Done backing up original state (4223a7b)!
+✔ Done backing up original state (ac27c08)!
 ⋯ Running tasks for staged files…
     *.{ts,js,cjs} — 1 file
       ⋯ prettier --check
@@ -30,26 +31,26 @@ npm run pre-commit
 > node scripts/check-hygiene.ts
 
 C3 hygiene: репозиторій чистий
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run commit-msg -- ".git/COMMIT_EDITMSG"
 
 > splittrip@0.1.0 commit-msg
 > node scripts/check-commit-msg.ts .git/COMMIT_EDITMSG
 
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 [код виходу: 0]
 
-$ git push "C:\Users\dimau\AppData\Local\Temp\splittrip-demo-egoRd9\remote.git" HEAD:refs/heads/demo-build
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+$ git push "C:\Users\dimau\AppData\Local\Temp\splittrip-demo-P9nkte\remote.git" HEAD:refs/heads/demo-types
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run typecheck
 
 > splittrip@0.1.0 typecheck
 > tsc --noEmit
 
 src/modules/money/index.ts(9,14): error TS2322: Type 'string' is not assignable to type 'number'.
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 husky - pre-push script failed (code 2)
 make[1]: *** [Makefile:27: typecheck] Error 2
-error: failed to push some refs to 'C:\Users\dimau\AppData\Local\Temp\splittrip-demo-egoRd9\remote.git'
+error: failed to push some refs to 'C:\Users\dimau\AppData\Local\Temp\splittrip-demo-P9nkte\remote.git'
 [код виходу: 1]

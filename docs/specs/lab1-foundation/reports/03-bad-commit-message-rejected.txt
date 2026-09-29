@@ -1,8 +1,9 @@
 # Відтворити: make demo (сценарій «коміт із повідомленням не за стандартом»)
 # Очікування: відмова; результат: OK
+# HEAD: 4ff91b5a77d574b7b6dcfcd8e7fca255c5d09498
 
 $ git commit --allow-empty -m "update stuff."
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run pre-commit
 
 > splittrip@0.1.0 pre-commit
@@ -14,8 +15,8 @@ npm run pre-commit
 > node scripts/check-hygiene.ts
 
 C3 hygiene: репозиторій чистий
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run commit-msg -- ".git/COMMIT_EDITMSG"
 
 > splittrip@0.1.0 commit-msg
@@ -26,6 +27,6 @@ C4 commit-msg: "update stuff."
   ✘ заголовок закінчується крапкою
   ✘ опис має бути українською
 make[1]: *** [Makefile:46: commit-msg] Error 1
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 husky - commit-msg script failed (code 2)
 [код виходу: 1]

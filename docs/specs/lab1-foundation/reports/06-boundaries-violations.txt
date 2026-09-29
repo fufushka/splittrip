@@ -1,8 +1,9 @@
 # Відтворити: make demo (сценарій «обхід index.ts, напрям, цикл, модуль поза архітектурою»)
 # Очікування: відмова; результат: OK
+# HEAD: 4ff91b5a77d574b7b6dcfcd8e7fca255c5d09498
 
 $ make boundaries
-make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 npm run boundaries
 
 > splittrip@0.1.0 boundaries
@@ -19,6 +20,6 @@ npm run boundaries
 
 x 5 dependency violations (5 errors, 0 warnings). 11 modules, 12 dependencies cruised.
 
-make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
 make[1]: *** [Makefile:30: boundaries] Error 5
 [код виходу: 2]
