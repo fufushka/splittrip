@@ -19,18 +19,31 @@
     "smoke": "node --test test/smoke/*.test.ts",
     "hygiene": "node scripts/check-hygiene.ts",
     "commit-msg": "node scripts/check-commit-msg.ts",
-    "ai-trace": "node scripts/ai-trace.ts"
+    "ai-trace": "node scripts/ai-trace.ts",
+    "prepare": "husky",
+    "pre-commit": "lint-staged && npm run hygiene"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.0",
     "dependency-cruiser": "^18.4.0",
     "eslint": "^10.11.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.9.9",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.0"
   },
   "dependencies": {
     "fastify": "^5.12.5"
+  },
+  "lint-staged": {
+    "*.{ts,js,cjs}": [
+      "prettier --check",
+      "eslint --max-warnings=0"
+    ],
+    "*.json": [
+      "prettier --check"
+    ]
   }
 }
