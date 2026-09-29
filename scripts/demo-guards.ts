@@ -51,6 +51,7 @@ function report(
   const body = [
     `# Відтворити: make demo (сценарій «${title}»)`,
     `# Очікування: ${expectFail ? 'відмова' : 'успіх'}; результат: ${verdict}`,
+    `# HEAD: ${head}`,
     '',
     ...results.flatMap((r) => [`$ ${r.command}`, r.output, `[код виходу: ${String(r.code)}]`, '']),
   ].join('\n');
@@ -63,6 +64,8 @@ const head = run('git rev-parse HEAD', process.cwd()).output;
 const root = mkdtempSync(join(tmpdir(), 'splittrip-demo-'));
 const repo = join(root, 'repo');
 const remote = join(root, 'remote.git');
+// Старі звіти прибираємо, щоб у reports/ лишався вивід лише цього запуску.
+rmSync(REPORTS, { recursive: true, force: true });
 mkdirSync(REPORTS, { recursive: true });
 
 try {
@@ -98,21 +101,55 @@ try {
     run('git commit -m "feat(money): демо порушення лінту"', repo),
   ]);
 
+  // 2c. Секрети й файли поза списком: відмову дає перевірка чистоти репо (C3).
+  reset();
+  writeFileSync(file('.env'), 'API_TOKEN=demo\n');
+  writeFileSync(file('NOTES'), 'файл без розширення\n');
+  // Заголовок ключа збираємо з частин, інакше C3 справедливо заблокує коміт цього скрипта.
+  const fakeKeyHeader = ['-----BEGIN RSA', 'PRIVATE KEY-----'].join(' ');
+  writeFileSync(file('docs/key.txt'), `${fakeKeyHeader}\ndemo\n`);
+  must('git add -f .env NOTES docs/key.txt', repo);
+  report(
+    '02c-hygiene-commit-rejected',
+    'коміт із .env, приватним ключем і файлом поза списком',
+    true,
+    [run('git commit -m "chore: демо брудного репозиторію"', repo)],
+  );
+
   // 3. Повідомлення коміту не за стандартом (C4).
   reset();
   report('03-bad-commit-message-rejected', 'коміт із повідомленням не за стандартом', true, [
     run('git commit --allow-empty -m "update stuff."', repo),
   ]);
 
-  // 4. Пуш зі зламаною збіркою: код проходить pre-commit, але не компілюється (крит. 7, C5, C7).
+  // 4. Пуш із помилкою типів: код проходить pre-commit, але не проходить tsc (крит. 7, C5).
   reset();
   appendFileSync(
     file('src/modules/money/index.ts'),
     "\nexport const broken: number = 'не число';\n",
   );
   must('git add src/modules/money/index.ts', repo);
-  const brokenBuild = run('git commit -m "feat(money): демо зламаної збірки"', repo);
-  report('04-broken-build-push-rejected', 'пуш зі зламаною збіркою', true, [
+  const typeError = run('git commit -m "feat(money): демо помилки типів"', repo);
+  report('04-type-error-push-rejected', 'пуш із помилкою типів', true, [
+    typeError,
+    run(`git push "${remote}" HEAD:refs/heads/demo-types`, repo),
+  ]);
+
+  // 4b. Пуш зі зламаною збіркою: типи й межі цілі, але src імпортує файл поза rootDir,
+  // тож падає саме `make build` (крит. 7, C7).
+  reset();
+  writeFileSync(file('scripts/outside.ts'), 'export const outside = 1;\n');
+  edit(file('src/main.ts'), (t) =>
+    t
+      .replace(
+        "import { buildServer } from './modules/http/index.ts';",
+        "import { outside } from '../scripts/outside.ts';\nimport { buildServer } from './modules/http/index.ts';",
+      )
+      .replace('const app =', 'void outside;\n\nconst app ='),
+  );
+  must('git add scripts/outside.ts src/main.ts', repo);
+  const brokenBuild = run('git commit -m "feat: демо зламаної збірки"', repo);
+  report('04b-broken-build-push-rejected', 'пуш зі зламаною збіркою', true, [
     brokenBuild,
     run(`git push "${remote}" HEAD:refs/heads/demo-build`, repo),
   ]);
