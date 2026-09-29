@@ -1,0 +1,23 @@
+{
+  "name": "splittrip",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Облік спільних витрат у подорожі",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --watch src/main.ts",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "typescript": "~6.0.3"
+  },
+  "dependencies": {
+    "fastify": "^5.12.5"
+  }
+}
