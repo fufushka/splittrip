@@ -1,0 +1,24 @@
+# Відтворити: make demo (сценарій «обхід index.ts, напрям, цикл, модуль поза архітектурою»)
+# Очікування: відмова; результат: OK
+
+$ make boundaries
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+npm run boundaries
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+  error unknown-module: src/modules/users/index.ts → src/modules/money/index.ts
+  error public-entry-from-module: src/modules/money/index.ts → src/modules/trips/internal/secret.ts
+  error no-circular: src/modules/balances/index.ts → 
+      src/modules/money/index.ts →
+      src/modules/balances/index.ts
+  error direction-money: src/modules/money/index.ts → src/modules/trips/internal/secret.ts
+  error direction-money: src/modules/money/index.ts → src/modules/balances/index.ts
+
+x 5 dependency violations (5 errors, 0 warnings). 11 modules, 12 dependencies cruised.
+
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: *** [Makefile:30: boundaries] Error 5
+[код виходу: 2]

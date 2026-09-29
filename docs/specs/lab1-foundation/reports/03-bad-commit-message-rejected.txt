@@ -1,0 +1,31 @@
+# Відтворити: make demo (сценарій «коміт із повідомленням не за стандартом»)
+# Очікування: відмова; результат: OK
+
+$ git commit --allow-empty -m "update stuff."
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+npm run pre-commit
+
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+→ lint-staged could not find any staged files.
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+npm run commit-msg -- ".git/COMMIT_EDITMSG"
+
+> splittrip@0.1.0 commit-msg
+> node scripts/check-commit-msg.ts .git/COMMIT_EDITMSG
+
+C4 commit-msg: "update stuff."
+  ✘ заголовок не у форматі "<тип>(<scope>): <опис>", типи: feat, fix, docs, test, refactor, build, chore, ci
+  ✘ заголовок закінчується крапкою
+  ✘ опис має бути українською
+make[1]: *** [Makefile:46: commit-msg] Error 1
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+husky - commit-msg script failed (code 2)
+[код виходу: 1]

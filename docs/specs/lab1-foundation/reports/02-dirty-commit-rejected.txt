@@ -1,0 +1,35 @@
+# Відтворити: make demo (сценарій «коміт із порушенням стилю й лінту»)
+# Очікування: відмова; результат: OK
+
+$ git commit -m "feat(money): демо брудного коміту"
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+npm run pre-commit
+
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+⋯ Backing up original state…
+✔ Done backing up original state (95a6466)!
+⋯ Running tasks for staged files…
+    *.{ts,js,cjs} — 1 file
+      ⋯ prettier --check
+      ⋯ eslint --max-warnings=0
+
+✖ prettier --check
+↓ eslint --max-warnings=0
+
+✖ Failed to run tasks for staged files!
+↓ Skipped staging changes from tasks…
+⋯ Reverting to original state because of errors…
+✔ Done reverting to original state!
+⋯ Cleaning up temporary files…
+✔ Done cleaning up temporary files!
+
+✖ prettier --check:
+Checking formatting...
+[warn] src/modules/money/dirty.ts
+[warn] Code style issues found in the above file. Run Prettier with --write to fix.
+make[1]: *** [Makefile:43: pre-commit] Error 1
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+husky - pre-commit script failed (code 2)
+[код виходу: 1]

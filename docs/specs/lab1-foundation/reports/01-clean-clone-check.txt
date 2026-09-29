@@ -1,0 +1,84 @@
+# Відтворити: make demo (сценарій «чистий клон: make install && make check»)
+# Очікування: успіх; результат: OK
+
+$ make install
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+npm ci
+
+> splittrip@0.1.0 prepare
+> husky
+
+
+added 190 packages, and audited 191 packages in 6s
+
+64 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+[код виходу: 0]
+
+$ git config core.hooksPath
+.husky/_
+[код виходу: 0]
+
+$ make check
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+npm run format:check
+
+> splittrip@0.1.0 format:check
+> prettier --check "**/*.{ts,js,cjs,json}"
+
+Checking formatting...
+All matched files use Prettier code style!
+npm run lint
+
+> splittrip@0.1.0 lint
+> eslint --max-warnings=0 .
+
+npm run hygiene
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+npm run typecheck
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+npm run boundaries
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+✔ no dependency violations found (9 modules, 9 dependencies cruised)
+
+npm run build
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+npm run smoke
+
+> splittrip@0.1.0 smoke
+> node --test test/smoke/*.test.ts
+
+▶ smoke: зібраний застосунок
+  ✔ зібраний вхід dist/main.js існує (0.7214ms)
+  ✔ стартує й відповідає на /health (3332.2461ms)
+  ✔ /version повертає sha поточного коміту (501.3893ms)
+  ✔ /version повертає APP_VERSION, якщо її задано (324.0367ms)
+  ✔ /version повертає unknown без git, а застосунок усе одно стартує (340.5318ms)
+✔ smoke: зібраний застосунок (4500.0477ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4657.8496
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-egoRd9/repo'
+[код виходу: 0]
