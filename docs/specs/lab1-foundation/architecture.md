@@ -1,6 +1,6 @@
 # Архітектура SplitTrip
 
-Статус: чернетка · Вхід: [spec.md](spec.md), [spec-fix-02.md](spec-fix-02.md),
+Статус: прийнято · Вхід: [spec.md](spec.md), [spec-fix-02.md](spec-fix-02.md),
 [spec-fix-03.md](spec-fix-03.md)
 
 ## 1. Як виведено межі модулів
