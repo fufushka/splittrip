@@ -1,0 +1,115 @@
+# Відтворити: make demo (сценарій «пуш зі зламаним smoke-тестом»)
+# Очікування: відмова; результат: OK
+# HEAD: 4ff91b5a77d574b7b6dcfcd8e7fca255c5d09498
+
+$ git commit -m "feat(http): демо зламаного smoke"
+[feature/lab1-foundation 7c9d513] feat(http): демо зламаного smoke
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+npm run pre-commit
+
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+⋯ Backing up original state…
+✔ Done backing up original state (c0603f3)!
+⋯ Running tasks for staged files…
+    *.{ts,js,cjs} — 1 file
+      ⋯ prettier --check
+      ⋯ eslint --max-warnings=0
+
+✔ prettier --check
+✔ eslint --max-warnings=0
+
+✔ Done running tasks for staged files!
+⋯ Staging changes from tasks…
+✔ Done staging changes from tasks!
+⋯ Cleaning up temporary files…
+✔ Done cleaning up temporary files!
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+npm run commit-msg -- ".git/COMMIT_EDITMSG"
+
+> splittrip@0.1.0 commit-msg
+> node scripts/check-commit-msg.ts .git/COMMIT_EDITMSG
+
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+[код виходу: 0]
+
+$ git push "C:\Users\dimau\AppData\Local\Temp\splittrip-demo-P9nkte\remote.git" HEAD:refs/heads/demo-smoke
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+npm run typecheck
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+npm run boundaries
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+✔ no dependency violations found (9 modules, 9 dependencies cruised)
+
+npm run build
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+npm run smoke
+
+> splittrip@0.1.0 smoke
+> node --test test/smoke/*.test.ts
+
+▶ smoke: зібраний застосунок
+  ✔ зібраний вхід dist/main.js існує (0.759ms)
+  ✖ стартує й відповідає на /health (395.0632ms)
+  ✔ /version повертає sha поточного коміту (393.6231ms)
+  ✔ /version повертає APP_VERSION, якщо її задано (363.7893ms)
+  ✔ /version повертає unknown без git, а застосунок усе одно стартує (464.6593ms)
+✖ smoke: зібраний застосунок (1618.9397ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1831.3897
+
+✖ failing tests:
+
+test at test\smoke\app.smoke.test.ts:79:3
+✖ стартує й відповідає на /health (395.0632ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      body: {
+  +     status: 'down'
+  -     status: 'ok'
+      },
+      status: 200
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo/test/smoke/app.smoke.test.ts:81:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { status: 200, body: { status: 'down' } },
+    expected: { status: 200, body: { status: 'ok' } },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+husky - pre-push script failed (code 2)
+make[1]: *** [Makefile:36: smoke] Error 1
+error: failed to push some refs to 'C:\Users\dimau\AppData\Local\Temp\splittrip-demo-P9nkte\remote.git'
+[код виходу: 1]
