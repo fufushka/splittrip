@@ -214,12 +214,23 @@ describe('/ready не висить на «завислій» БД (spec-fix-04, 
     const app = await startHarness({ env: { DATABASE_URL: proxy.url } });
     assert.equal((await app.call('GET', '/ready')).status, 200);
     proxy.freeze();
-    const started = Date.now();
-    const res = await app.call('GET', '/ready');
-    assert.equal(res.status, 503);
-    assert.ok(Date.now() - started < 3000, `${String(Date.now() - started)} мс`);
-    proxy.down();
-    await app.close();
+    try {
+      const started = Date.now();
+      // Власний дедлайн: без таймауту в /ready тест мав би впасти, а не зависнути.
+      const res = await Promise.race([
+        app.call('GET', '/ready'),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => {
+            reject(new Error('/ready не відповів за 5 с'));
+          }, 5000).unref(),
+        ),
+      ]);
+      assert.equal(res.status, 503);
+      assert.ok(Date.now() - started < 3000, `${String(Date.now() - started)} мс`);
+    } finally {
+      proxy.down();
+      await app.close();
+    }
   });
 });
 
