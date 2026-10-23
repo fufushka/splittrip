@@ -18,6 +18,8 @@
     "boundaries": "depcruise src --config .dependency-cruiser.cjs",
     "smoke": "npm run build && node --test test/smoke/*.test.ts",
     "test:api": "node --test test/api/*.test.ts",
+    "db:start": "node scripts/db-start.ts",
+    "db:stop": "supabase stop",
     "test:unit": "node --test test/unit/*.test.ts",
     "hygiene": "node scripts/check-hygiene.ts",
     "commit-msg": "node scripts/check-commit-msg.ts",
@@ -36,12 +38,14 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.9",
+    "supabase": "2.120.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.0"
   },
   "dependencies": {
     "fastify": "^5.12.7",
-    "jose": "6.2.12"
+    "jose": "6.2.12",
+    "postgres": "3.4.9"
   },
   "lint-staged": {
     "*.{ts,js,cjs}": [
