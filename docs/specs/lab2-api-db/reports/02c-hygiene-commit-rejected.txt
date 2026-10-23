@@ -1,0 +1,20 @@
+# Відтворити: npm run demo (сценарій «коміт із .env, приватним ключем і файлом поза списком»)
+# Очікування: відмова; результат: OK
+# HEAD: bb6d03ab49fabc0bb1572939951409e10f9fc19f
+
+$ git commit -m "chore: демо брудного репозиторію"
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+→ lint-staged could not find any staged files matching configured tasks.
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій не чистий
+  ✘ .env: файл із секретами не комітиться
+  ✘ .env: файл без розширення не з дозволеного списку
+  ✘ NOTES: файл без розширення не з дозволеного списку
+  ✘ docs/key.txt:1: схоже на приватний ключ
+husky - pre-commit script failed (code 1)
+[код виходу: 1]

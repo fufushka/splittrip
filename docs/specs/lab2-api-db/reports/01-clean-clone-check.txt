@@ -1,0 +1,197 @@
+# Відтворити: npm run demo (сценарій «чистий клон: npm ci && npm run check»)
+# Очікування: успіх; результат: OK
+# HEAD: bb6d03ab49fabc0bb1572939951409e10f9fc19f
+
+$ npm ci
+> splittrip@0.1.0 prepare
+> husky
+
+
+added 199 packages, and audited 200 packages in 11s
+
+69 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+[код виходу: 0]
+
+$ git config core.hooksPath
+.husky/_
+[код виходу: 0]
+
+$ npm run check
+> splittrip@0.1.0 check
+> npm run format:check && npm run lint && npm run hygiene && npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api
+
+
+> splittrip@0.1.0 format:check
+> prettier --check "**/*.{ts,js,cjs,json}"
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> splittrip@0.1.0 lint
+> eslint --max-warnings=0 .
+
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+✔ no dependency violations found (38 modules, 94 dependencies cruised)
+
+
+> splittrip@0.1.0 smoke
+> npm run build && node --test test/smoke/*.test.ts
+
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+▶ smoke: зібраний застосунок
+  ✔ зібраний вхід dist/main.js існує (0.8089ms)
+  ✔ стартує й відповідає на /health (525.4814ms)
+  ✔ /version повертає sha поточного коміту (664.8832ms)
+  ✔ /version повертає APP_VERSION, якщо її задано (481.7511ms)
+  ✔ /version повертає unknown без git, а застосунок усе одно стартує (570.2821ms)
+✔ smoke: зібраний застосунок (2244.3115ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2371.6383
+
+> splittrip@0.1.0 test:unit
+> node --test --test-timeout=60000 test/unit/*.test.ts
+
+▶ ids: UUIDv7
+  ✔ формат RFC 9562: версія 7, варіант 10 (3.4684ms)
+  ✔ монотонні в межах однієї мілісекунди й при відставанні годинника (26.6048ms)
+✔ ids: UUIDv7 (30.8207ms)
+▶ money: allocateEqually (ADR-0010)
+  ✔ 10000 на 3 → [3334, 3333, 3333] (0.2497ms)
+  ✔ Σ часток = сума для різних входів (I1) (1.147ms)
+  ✔ дробові суми й нецілі частки відхиляються (0.4799ms)
+✔ money: allocateEqually (ADR-0010) (2.059ms)
+▶ balances: computeBalances і suggestTransfers
+  ✔ Σ балансів = 0 (I2); переказ зменшує борг (0.3794ms)
+  ✔ жадібний розрахунок обнуляє всі баланси, не більше n − 1 переказу (ADR-0011) (0.2885ms)
+✔ balances: computeBalances і suggestTransfers (0.8507ms)
+▶ auth: адаптер Supabase
+  ✔ signup без сесії (увімкнено «Confirm email») → явна помилка конфігурації, не 2xx (20.0765ms)
+  ✔ signup: user_already_exists → EmailTakenError; інша 4xx → AuthRejectedError (11.1284ms)
+  ✔ 5xx і обрив з’єднання → AuthUnavailableError (503), а не 401 (10.1094ms)
+  ✔ apikey передається в кожен запит; паролі не йдуть у query (2.7838ms)
+✔ auth: адаптер Supabase (49.9451ms)
+ℹ tests 11
+ℹ suites 4
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 279.6166
+
+> splittrip@0.1.0 test:api
+> node --test --test-timeout=120000 test/api/*.test.ts
+
+▶ auth: реєстрація й логін
+  ✔ signup → 201 з користувачем і токенами; email у нижньому регістрі (104.2723ms)
+  ✔ signup з зайнятим email → 409 email_taken (19.9767ms)
+  ✔ signup з некоректним email, коротким чи задовгим паролем → 400 (3.8708ms)
+  ✔ login → 200 і токен працює на /trips (52.5328ms)
+  ✔ невідомий email і хибний пароль — однаковий 401 (без перебору email) (45.9708ms)
+✔ auth: реєстрація й логін (390.3396ms)
+▶ auth: refresh і logout
+  ✔ refresh → нова пара токенів, новий access-токен працює (21.9398ms)
+  ✔ невідомий refresh-токен → 401 (1.5827ms)
+  ✔ logout → 204; після нього refresh-токен не діє (20.8592ms)
+  ✔ logout без токена → 401 (0.8516ms)
+✔ auth: refresh і logout (45.6915ms)
+▶ auth: доступ до /trips
+  ✔ без токена, з підробленим чи не-Bearer → 401 з WWW-Authenticate (24.5942ms)
+  ✔ прострочений токен → 401 (88.1364ms)
+  ✔ токен з правильними claims, підписаний чужим ключем → 401 (34.6052ms)
+✔ auth: доступ до /trips (147.5852ms)
+▶ доступ: чужа поїздка → 404 на кожен /trips/:id*
+  ✔ жоден ендпоінт не видає й не змінює чужу поїздку (32.0907ms)
+  ✔ GET /trips не показує чужих поїздок (8.3707ms)
+✔ доступ: чужа поїздка → 404 на кожен /trips/:id* (317.7638ms)
+▶ помилки й requestId
+  ✔ problem+json з requestId = X-Request-Id відповіді (2.3118ms)
+  ✔ X-Request-Id клієнта використовується; небезпечний — замінюється UUIDv7 (1.3209ms)
+  ✔ невідомий маршрут → 404 route_not_found; зламаний JSON → 400 (3.2899ms)
+  ✔ /health 200, /ready 200 на статиці, /version — без JWT (2.3395ms)
+✔ помилки й requestId (9.6963ms)
+▶ ідемпотентність POST /trips* (ADR-0019)
+  ✔ повтор із тим самим ключем → та сама відповідь і одна поїздка (4.6846ms)
+  ✔ без ключа POST виконується; ключ довший за 255 символів → 400 (spec-fix-01, п. 4) (2.0302ms)
+  ✔ той самий ключ з іншим тілом → 422 idempotency_key_reused (2.3473ms)
+  ✔ ключі ізольовані між користувачами (2.5939ms)
+  ✔ 4xx теж відтворюється: повтор не виконує операцію вдруге (3.4733ms)
+✔ ідемпотентність POST /trips* (ADR-0019) (15.5635ms)
+▶ логи (крит. 5, 6)
+  ✔ рядки роута, сервісу й сховища одного запиту мають той самий processId і userId (1.3472ms)
+  ✔ паролі й токени не потрапляють у логи (43.6546ms)
+✔ логи (крит. 5, 6) (45.1498ms)
+▶ паралельні зміни (крит. 7)
+  ✔ close і POST expenses одночасно: рівно одна операція успішна, стан узгоджений (41.6962ms)
+✔ паралельні зміни (крит. 7) (41.8504ms)
+﹣ N+1 (крит. 10) (0.469ms) # лише для npm run test:api:db
+﹣ ретраї тимчасових помилок (крит. 8) (0.1609ms) # лише для npm run test:api:db
+﹣ збій джерела під час роботи (крит. 9) (0.1068ms) # лише для npm run test:api:db
+﹣ fail-fast на старті (крит. 9) (0.1402ms) # лише для npm run test:api:db
+﹣ обмеження БД — друга лінія інваріантів (0.1013ms) # лише для npm run test:api:db
+▶ поїздки: створення, список, перегляд, видалення
+  ✔ POST /trips → 201 відкрита поїздка без учасників (6.2618ms)
+  ✔ POST /trips з порожньою назвою, невідомою валютою чи зайвим полем → 400 (8.2767ms)
+  ✔ GET /trips — лише свої, новіші першими, з курсором (31.444ms)
+  ✔ GET /trips з limit поза 1–100 чи некоректним курсором → 400 (6.6723ms)
+  ✔ GET /trips/:id → агрегат з учасниками, витратами й переказами (11.6123ms)
+  ✔ GET /trips/:id неіснуючої → 404; некоректний id → 400 (1.8702ms)
+  ✔ DELETE /trips/:id → 204 для відкритої й закритої; потім 404 (7.984ms)
+  ✔ DELETE /trips/:id з учасниками, витратами й переказами → 204, каскадно (контракт) (6.5099ms)
+✔ поїздки: створення, список, перегляд, видалення (327.3592ms)
+▶ учасники
+  ✔ додати → 201 з position за порядком; прибрати незгаданого → 204 (3.8353ms)
+  ✔ порожнє ім’я → 400; неіснуючий учасник → 404 (2.9167ms)
+  ✔ прибрати згаданого у витраті чи переказі → 409 participant_in_use (I5) (8.0433ms)
+✔ учасники (15.0833ms)
+▶ витрати
+  ✔ поділ порівну: залишкові копійки — першим за порядком додавання (ADR-0010) (4.3538ms)
+  ✔ точні частки; платник може не входити в поділ (3.6677ms)
+  ✔ частки exact — за порядком додавання учасників, як у БД (spec-fix-02, п. 2) (4.3806ms)
+  ✔ Σ часток ≠ сумі → 422 shares_sum_mismatch (I1) (2.3832ms)
+  ✔ чужий учасник (платник чи частка) → 422 unknown_participant (I3) (5.3756ms)
+  ✔ дубль учасника в поділі → 422 duplicate_participant (2.3538ms)
+  ✔ некоректна форма: сума 0, дробова, рядком, булева; невідомий mode → 400 (6.0593ms)
+  ✔ PUT → 200, частки перераховано; неіснуюча витрата → 404 (4.7417ms)
+  ✔ DELETE → 204; повторно → 404 (3.6ms)
+✔ витрати (37.3789ms)
+▶ перекази, баланси, розрахунок, закриття
+  ✔ сценарій повністю: витрата → баланси → пропозиції → перекази → закриття (10.968ms)
+  ✔ переказ сам собі → 422; чужому → 422; неіснуючий → 404 при видаленні (4.0021ms)
+  ✔ помилковий переказ видаляється → 204; переплата лише змінює баланс (4.3489ms)
+  ✔ закрита поїздка не змінюється: кожна зміна → 409 trip_closed (I4) (6.8866ms)
+✔ перекази, баланси, розрахунок, закриття (26.461ms)
+ℹ tests 50
+ℹ suites 17
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1077.2846
+[код виходу: 0]

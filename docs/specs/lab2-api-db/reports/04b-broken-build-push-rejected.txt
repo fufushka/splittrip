@@ -1,0 +1,63 @@
+# Відтворити: npm run demo (сценарій «пуш зі зламаною збіркою»)
+# Очікування: відмова; результат: OK
+# HEAD: bb6d03ab49fabc0bb1572939951409e10f9fc19f
+
+$ git commit -m "feat: демо зламаної збірки"
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+⋯ Backing up original state…
+✔ Done backing up original state (023fcbe)!
+⋯ Running tasks for staged files…
+    *.{ts,js,cjs} — 2 files
+      ⋯ prettier --check
+      ⋯ eslint --max-warnings=0
+
+✔ prettier --check
+✖ eslint --max-warnings=0
+
+✖ Failed to run tasks for staged files!
+↓ Skipped staging changes from tasks…
+⋯ Reverting to original state because of errors…
+✔ Done reverting to original state!
+⋯ Cleaning up temporary files…
+✔ Done cleaning up temporary files!
+
+✖ eslint --max-warnings=0:
+
+C:\Users\dimau\AppData\Local\Temp\splittrip-demo-n1uJaZ\repo\src\main.ts
+  12:3  error  void operator is useless here; it should only discard a call's return value  @typescript-eslint/no-meaningless-void-operator
+
+✖ 1 problem (1 error, 0 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+husky - pre-commit script failed (code 1)
+[код виходу: 1]
+
+$ git push "C:\Users\dimau\AppData\Local\Temp\splittrip-demo-n1uJaZ\remote.git" HEAD:refs/heads/demo-build
+> splittrip@0.1.0 pre-push
+> npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api
+
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+✔ no dependency violations found (39 modules, 95 dependencies cruised)
+
+
+> splittrip@0.1.0 smoke
+> npm run build && node --test test/smoke/*.test.ts
+
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+src/main.ts(5,25): error TS6059: File 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-n1uJaZ/repo/scripts/outside.ts' is not under 'rootDir' 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-n1uJaZ/repo/src'. 'rootDir' is expected to contain all source files.
+  File is ECMAScript module because 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-n1uJaZ/repo/package.json' has field "type" with value "module"
+husky - pre-push script failed (code 2)
+error: failed to push some refs to 'C:\Users\dimau\AppData\Local\Temp\splittrip-demo-n1uJaZ\remote.git'
+[код виходу: 1]

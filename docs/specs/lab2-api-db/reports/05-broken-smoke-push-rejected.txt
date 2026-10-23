@@ -1,0 +1,104 @@
+# Відтворити: npm run demo (сценарій «пуш зі зламаним smoke-тестом»)
+# Очікування: відмова; результат: OK
+# HEAD: bb6d03ab49fabc0bb1572939951409e10f9fc19f
+
+$ git commit -m "feat(http): демо зламаного smoke"
+[feature/lab2-api-db 754be7a] feat(http): демо зламаного smoke
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+⋯ Backing up original state…
+✔ Done backing up original state (061f4b5)!
+⋯ Running tasks for staged files…
+    *.{ts,js,cjs} — 1 file
+      ⋯ prettier --check
+      ⋯ eslint --max-warnings=0
+
+✔ prettier --check
+✔ eslint --max-warnings=0
+
+✔ Done running tasks for staged files!
+⋯ Staging changes from tasks…
+✔ Done staging changes from tasks!
+⋯ Cleaning up temporary files…
+✔ Done cleaning up temporary files!
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+
+> splittrip@0.1.0 commit-msg
+> node scripts/check-commit-msg.ts .git/COMMIT_EDITMSG
+[код виходу: 0]
+
+$ git push "C:\Users\dimau\AppData\Local\Temp\splittrip-demo-n1uJaZ\remote.git" HEAD:refs/heads/demo-smoke
+> splittrip@0.1.0 pre-push
+> npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api
+
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+✔ no dependency violations found (38 modules, 94 dependencies cruised)
+
+
+> splittrip@0.1.0 smoke
+> npm run build && node --test test/smoke/*.test.ts
+
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+▶ smoke: зібраний застосунок
+  ✔ зібраний вхід dist/main.js існує (0.7793ms)
+  ✖ стартує й відповідає на /health (501.0123ms)
+  ✔ /version повертає sha поточного коміту (501.4005ms)
+  ✔ /version повертає APP_VERSION, якщо її задано (446.606ms)
+  ✔ /version повертає unknown без git, а застосунок усе одно стартує (466.1905ms)
+✖ smoke: зібраний застосунок (1917.0931ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2033.3692
+
+✖ failing tests:
+
+test at test\smoke\app.smoke.test.ts:79:3
+✖ стартує й відповідає на /health (501.0123ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      body: {
+  +     status: 'down'
+  -     status: 'ok'
+      },
+      status: 200
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Users/dimau/AppData/Local/Temp/splittrip-demo-n1uJaZ/repo/test/smoke/app.smoke.test.ts:81:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { status: 200, body: { status: 'down' } },
+    expected: { status: 200, body: { status: 'ok' } },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+husky - pre-push script failed (code 1)
+error: failed to push some refs to 'C:\Users\dimau\AppData\Local\Temp\splittrip-demo-n1uJaZ\remote.git'
+[код виходу: 1]

@@ -1,0 +1,221 @@
+# Відтворити: npm run demo (сценарій «пуш без перевірки власника поїздки»)
+# Очікування: відмова; результат: OK
+# HEAD: bb6d03ab49fabc0bb1572939951409e10f9fc19f
+
+$ git commit -m "feat(trips): демо без перевірки власника"
+[feature/lab2-api-db 48a514f] feat(trips): демо без перевірки власника
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+⋯ Backing up original state…
+✔ Done backing up original state (b3e3ee2)!
+⋯ Running tasks for staged files…
+    *.{ts,js,cjs} — 1 file
+      ⋯ prettier --check
+      ⋯ eslint --max-warnings=0
+
+✔ prettier --check
+✔ eslint --max-warnings=0
+
+✔ Done running tasks for staged files!
+⋯ Staging changes from tasks…
+✔ Done staging changes from tasks!
+⋯ Cleaning up temporary files…
+✔ Done cleaning up temporary files!
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+
+> splittrip@0.1.0 commit-msg
+> node scripts/check-commit-msg.ts .git/COMMIT_EDITMSG
+[код виходу: 0]
+
+$ git push "C:\Users\dimau\AppData\Local\Temp\splittrip-demo-n1uJaZ\remote.git" HEAD:refs/heads/demo-api
+> splittrip@0.1.0 pre-push
+> npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api
+
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+✔ no dependency violations found (38 modules, 94 dependencies cruised)
+
+
+> splittrip@0.1.0 smoke
+> npm run build && node --test test/smoke/*.test.ts
+
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+▶ smoke: зібраний застосунок
+  ✔ зібраний вхід dist/main.js існує (1.3287ms)
+  ✔ стартує й відповідає на /health (515.4121ms)
+  ✔ /version повертає sha поточного коміту (498.2129ms)
+  ✔ /version повертає APP_VERSION, якщо її задано (443.225ms)
+  ✔ /version повертає unknown без git, а застосунок усе одно стартує (680.4083ms)
+✔ smoke: зібраний застосунок (2140.5427ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2273.0298
+
+> splittrip@0.1.0 test:unit
+> node --test --test-timeout=60000 test/unit/*.test.ts
+
+▶ ids: UUIDv7
+  ✔ формат RFC 9562: версія 7, варіант 10 (3.6203ms)
+  ✔ монотонні в межах однієї мілісекунди й при відставанні годинника (27.9401ms)
+✔ ids: UUIDv7 (32.5499ms)
+▶ money: allocateEqually (ADR-0010)
+  ✔ 10000 на 3 → [3334, 3333, 3333] (0.2704ms)
+  ✔ Σ часток = сума для різних входів (I1) (1.1724ms)
+  ✔ дробові суми й нецілі частки відхиляються (0.6405ms)
+✔ money: allocateEqually (ADR-0010) (2.2854ms)
+▶ balances: computeBalances і suggestTransfers
+  ✔ Σ балансів = 0 (I2); переказ зменшує борг (0.997ms)
+  ✔ жадібний розрахунок обнуляє всі баланси, не більше n − 1 переказу (ADR-0011) (0.3496ms)
+✔ balances: computeBalances і suggestTransfers (1.5161ms)
+▶ auth: адаптер Supabase
+  ✔ signup без сесії (увімкнено «Confirm email») → явна помилка конфігурації, не 2xx (22.3748ms)
+  ✔ signup: user_already_exists → EmailTakenError; інша 4xx → AuthRejectedError (7.7201ms)
+  ✔ 5xx і обрив з’єднання → AuthUnavailableError (503), а не 401 (7.9036ms)
+  ✔ apikey передається в кожен запит; паролі не йдуть у query (2.8325ms)
+✔ auth: адаптер Supabase (47.2174ms)
+ℹ tests 11
+ℹ suites 4
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 262.4615
+
+> splittrip@0.1.0 test:api
+> node --test --test-timeout=120000 test/api/*.test.ts
+
+▶ auth: реєстрація й логін
+  ✔ signup → 201 з користувачем і токенами; email у нижньому регістрі (100.8518ms)
+  ✔ signup з зайнятим email → 409 email_taken (19.5896ms)
+  ✔ signup з некоректним email, коротким чи задовгим паролем → 400 (3.1403ms)
+  ✔ login → 200 і токен працює на /trips (39.8445ms)
+  ✔ невідомий email і хибний пароль — однаковий 401 (без перебору email) (37.8395ms)
+✔ auth: реєстрація й логін (371.152ms)
+▶ auth: refresh і logout
+  ✔ refresh → нова пара токенів, новий access-токен працює (20.6622ms)
+  ✔ невідомий refresh-токен → 401 (1.1791ms)
+  ✔ logout → 204; після нього refresh-токен не діє (22.2008ms)
+  ✔ logout без токена → 401 (0.9343ms)
+✔ auth: refresh і logout (45.5159ms)
+▶ auth: доступ до /trips
+  ✔ без токена, з підробленим чи не-Bearer → 401 з WWW-Authenticate (20.7868ms)
+  ✔ прострочений токен → 401 (183.8056ms)
+  ✔ токен з правильними claims, підписаний чужим ключем → 401 (69.0783ms)
+✔ auth: доступ до /trips (274.1343ms)
+▶ доступ: чужа поїздка → 404 на кожен /trips/:id*
+  ✖ жоден ендпоінт не видає й не змінює чужу поїздку (12.6339ms)
+  ✔ GET /trips не показує чужих поїздок (7.6281ms)
+✖ доступ: чужа поїздка → 404 на кожен /trips/:id* (306.3743ms)
+▶ помилки й requestId
+  ✔ problem+json з requestId = X-Request-Id відповіді (2.6348ms)
+  ✔ X-Request-Id клієнта використовується; небезпечний — замінюється UUIDv7 (0.9281ms)
+  ✔ невідомий маршрут → 404 route_not_found; зламаний JSON → 400 (1.5413ms)
+  ✔ /health 200, /ready 200 на статиці, /version — без JWT (1.3125ms)
+✔ помилки й requestId (6.6894ms)
+▶ ідемпотентність POST /trips* (ADR-0019)
+  ✔ повтор із тим самим ключем → та сама відповідь і одна поїздка (3.6518ms)
+  ✔ без ключа POST виконується; ключ довший за 255 символів → 400 (spec-fix-01, п. 4) (2.5226ms)
+  ✔ той самий ключ з іншим тілом → 422 idempotency_key_reused (2.0167ms)
+  ✔ ключі ізольовані між користувачами (2.1302ms)
+  ✔ 4xx теж відтворюється: повтор не виконує операцію вдруге (4.0099ms)
+✔ ідемпотентність POST /trips* (ADR-0019) (14.7233ms)
+▶ логи (крит. 5, 6)
+  ✔ рядки роута, сервісу й сховища одного запиту мають той самий processId і userId (1.635ms)
+  ✔ паролі й токени не потрапляють у логи (36.6395ms)
+✔ логи (крит. 5, 6) (38.4237ms)
+▶ паралельні зміни (крит. 7)
+  ✔ close і POST expenses одночасно: рівно одна операція успішна, стан узгоджений (39.0553ms)
+✔ паралельні зміни (крит. 7) (39.2212ms)
+﹣ N+1 (крит. 10) (0.4481ms) # лише для npm run test:api:db
+﹣ ретраї тимчасових помилок (крит. 8) (0.1388ms) # лише для npm run test:api:db
+﹣ збій джерела під час роботи (крит. 9) (0.1287ms) # лише для npm run test:api:db
+﹣ fail-fast на старті (крит. 9) (0.163ms) # лише для npm run test:api:db
+﹣ обмеження БД — друга лінія інваріантів (0.1053ms) # лише для npm run test:api:db
+▶ поїздки: створення, список, перегляд, видалення
+  ✔ POST /trips → 201 відкрита поїздка без учасників (5.0733ms)
+  ✔ POST /trips з порожньою назвою, невідомою валютою чи зайвим полем → 400 (8.0132ms)
+  ✔ GET /trips — лише свої, новіші першими, з курсором (24.2043ms)
+  ✔ GET /trips з limit поза 1–100 чи некоректним курсором → 400 (3.7852ms)
+  ✔ GET /trips/:id → агрегат з учасниками, витратами й переказами (6.4089ms)
+  ✔ GET /trips/:id неіснуючої → 404; некоректний id → 400 (1.4879ms)
+  ✔ DELETE /trips/:id → 204 для відкритої й закритої; потім 404 (5.8735ms)
+  ✔ DELETE /trips/:id з учасниками, витратами й переказами → 204, каскадно (контракт) (6.3961ms)
+✔ поїздки: створення, список, перегляд, видалення (309.8756ms)
+▶ учасники
+  ✔ додати → 201 з position за порядком; прибрати незгаданого → 204 (3.4627ms)
+  ✔ порожнє ім’я → 400; неіснуючий учасник → 404 (2.2636ms)
+  ✔ прибрати згаданого у витраті чи переказі → 409 participant_in_use (I5) (6.7882ms)
+✔ учасники (12.7552ms)
+▶ витрати
+  ✔ поділ порівну: залишкові копійки — першим за порядком додавання (ADR-0010) (3.7878ms)
+  ✔ точні частки; платник може не входити в поділ (2.5598ms)
+  ✔ частки exact — за порядком додавання учасників, як у БД (spec-fix-02, п. 2) (3.3733ms)
+  ✔ Σ часток ≠ сумі → 422 shares_sum_mismatch (I1) (2.0417ms)
+  ✔ чужий учасник (платник чи частка) → 422 unknown_participant (I3) (3.6973ms)
+  ✔ дубль учасника в поділі → 422 duplicate_participant (1.9943ms)
+  ✔ некоректна форма: сума 0, дробова, рядком, булева; невідомий mode → 400 (5.7688ms)
+  ✔ PUT → 200, частки перераховано; неіснуюча витрата → 404 (3.9905ms)
+  ✔ DELETE → 204; повторно → 404 (4.9185ms)
+✔ витрати (32.5594ms)
+▶ перекази, баланси, розрахунок, закриття
+  ✔ сценарій повністю: витрата → баланси → пропозиції → перекази → закриття (9.2656ms)
+  ✔ переказ сам собі → 422; чужому → 422; неіснуючий → 404 при видаленні (4.2834ms)
+  ✔ помилковий переказ видаляється → 204; переплата лише змінює баланс (4.4623ms)
+  ✔ закрита поїздка не змінюється: кожна зміна → 409 trip_closed (I4) (7.2301ms)
+✔ перекази, баланси, розрахунок, закриття (25.4919ms)
+ℹ tests 50
+ℹ suites 17
+ℹ pass 49
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1146.7004
+
+✖ failing tests:
+
+test at test\api\cross-cutting.test.ts:49:3
+✖ жоден ендпоінт не видає й не змінює чужу поїздку (12.6339ms)
+  AssertionError [ERR_ASSERTION]: GET /trips/01a16b06-61bb-751f-8318-f0c8e6d33482: {"id":"01a16b06-61bb-751f-8318-f0c8e6d33482","name":"Спільна","currency":"UAH","status":"open","closedAt":null,"createdAt":"2026-10-23T23:09:02.779Z","participants":[{"id":"01a16b06-61bd-75de-9192-cb28f7315543","name":"Аня","position":1},{"id":"01a16b06-61be-74b8-b2d6-6a04150d5089","name":"Богдан","position":2}],"expenses":[{"id":"01a16b06-61c0-743a-815d-c01b6d872668","payerId":"01a16b06-61bd-75de-9192-cb28f7315543","amount":100,"splitMode":"equal","description":"","shares":[{"participantId":"01a16b06-61bd-75de-9192-cb28f7315543","amount":50},{"participantId":"01a16b06-61be-74b8-b2d6-6a04150d5089","amount":50}]}],"transfers":[{"id":"01a16b06-61c2-724e-9e89-9c7a408d4456","fromId":"01a16b06-61be-74b8-b2d6-6a04150d5089","toId":"01a16b06-61bd-75de-9192-cb28f7315543","amount":50}]}
+  
+  200 !== 404
+  
+      at TestContext.<anonymous> (file:///C:/Users/dimau/AppData/Local/Temp/splittrip-demo-n1uJaZ/repo/test/api/cross-cutting.test.ts:72:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1533:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 404,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+husky - pre-push script failed (code 1)
+error: failed to push some refs to 'C:\Users\dimau\AppData\Local\Temp\splittrip-demo-n1uJaZ\remote.git'
+[код виходу: 1]

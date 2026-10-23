@@ -1,0 +1,31 @@
+# Відтворити: npm run demo (сценарій «коміт із порушенням стилю й лінту»)
+# Очікування: відмова; результат: OK
+# HEAD: bb6d03ab49fabc0bb1572939951409e10f9fc19f
+
+$ git commit -m "feat(money): демо брудного коміту"
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+⋯ Backing up original state…
+✔ Done backing up original state (cdd90de)!
+⋯ Running tasks for staged files…
+    *.{ts,js,cjs} — 1 file
+      ⋯ prettier --check
+      ⋯ eslint --max-warnings=0
+
+✖ prettier --check
+↓ eslint --max-warnings=0
+
+✖ Failed to run tasks for staged files!
+↓ Skipped staging changes from tasks…
+⋯ Reverting to original state because of errors…
+✔ Done reverting to original state!
+⋯ Cleaning up temporary files…
+✔ Done cleaning up temporary files!
+
+✖ prettier --check:
+Checking formatting...
+[warn] src/modules/money/dirty.ts
+[warn] Code style issues found in the above file. Run Prettier with --write to fix.
+husky - pre-commit script failed (code 1)
+[код виходу: 1]
