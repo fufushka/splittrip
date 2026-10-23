@@ -126,6 +126,22 @@ describe('поїздки: створення, список, перегляд, в
     assert.equal((await as('POST', `/trips/${closed}/close`)).status, 200);
     assert.equal((await as('DELETE', `/trips/${closed}`)).status, 204);
   });
+
+  it('DELETE /trips/:id з учасниками, витратами й переказами → 204, каскадно (контракт)', async () => {
+    // Прогалина, знайдена сухим прогоном cloud-run: тести видаляли лише порожні поїздки.
+    const id = await trip();
+    const a = await participant(id, 'Аня');
+    const b = await participant(id, 'Богдан');
+    await as('POST', `/trips/${id}/expenses`, {
+      payerId: a,
+      amount: 100,
+      split: { mode: 'equal', participantIds: [a, b] },
+    });
+    await as('POST', `/trips/${id}/transfers`, { fromId: b, toId: a, amount: 50 });
+    const res = await as('DELETE', `/trips/${id}`);
+    assert.equal(res.status, 204, res.text);
+    assertProblem(await as('GET', `/trips/${id}`), 404, 'trip_not_found');
+  });
 });
 
 describe('учасники', () => {
