@@ -1,5 +1,5 @@
 /**
- * Відтворювана демонстрація конвеєра (spec.md, крит. 5, 7, 10): у тимчасовому клоні HEAD
+ * Відтворювана демонстрація конвеєра (лаба 1, крит. 5, 7, 10; лаба 2, крит. 3, 4; C11): у тимчасовому клоні HEAD
  * запускає `npm ci` + `npm run check`, робить брудний коміт, коміт із поганим повідомленням,
  * пуші зі зламаною збіркою та smoke і порушення меж модулів. Реальний вивід кожного
  * сценарію пише в docs/specs/lab2-api-db/reports/. Робочу копію не змінює.
@@ -36,8 +36,12 @@ function must(command: string, cwd: string): void {
     throw new Error(`«${command}» завершилась з кодом ${String(res.code)}\n${res.output}`);
 }
 
+/** Підміна, що нічого не змінила, — помилка сценарію, а не «успіх» (код міг змінитися). */
 function edit(file: string, change: (text: string) => string): void {
-  writeFileSync(file, change(readFileSync(file, 'utf8')));
+  const before = readFileSync(file, 'utf8');
+  const after = change(before);
+  if (after === before) throw new Error(`Сценарій не застосовано: ${file} не змінився`);
+  writeFileSync(file, after);
 }
 
 function report(
@@ -142,10 +146,13 @@ try {
   edit(file('src/main.ts'), (t) =>
     t
       .replace(
-        "import { buildServer } from './modules/http/index.ts';",
-        "import { outside } from '../scripts/outside.ts';\nimport { buildServer } from './modules/http/index.ts';",
+        "import { composeApp } from './compose.ts';",
+        "import { outside } from '../scripts/outside.ts';\nimport { composeApp } from './compose.ts';",
       )
-      .replace('const app =', 'void outside;\n\nconst app ='),
+      .replace(
+        '  const app = await composeApp();',
+        '  void outside;\n  const app = await composeApp();',
+      ),
   );
   must('git add scripts/outside.ts src/main.ts', repo);
   const brokenBuild = run('git commit -m "feat: демо зламаної збірки"', repo);
@@ -187,6 +194,55 @@ try {
     true,
     [run('npm run boundaries', repo)],
   );
+
+  // 6b. Межі шарів лаби 2 (крит. 3): SQL-драйвер у роутах, AsyncLocalStorage і fastify у
+  // сервісі, jose у сховищі — кожне має валити C6.
+  reset();
+  appendFileSync(
+    file('src/modules/http/routes/trips.ts'),
+    "import postgres from 'postgres';\nexport const leakedSql = postgres;\n",
+  );
+  appendFileSync(
+    file('src/modules/trips/service.ts'),
+    "import { AsyncLocalStorage } from 'node:async_hooks';\n" +
+      "import Fastify from 'fastify';\n" +
+      'export const leaked = [AsyncLocalStorage, Fastify];\n',
+  );
+  appendFileSync(
+    file('src/modules/storage/index.ts'),
+    "import { decodeJwt } from 'jose';\nexport const leakedJwt = decodeJwt;\n",
+  );
+  report('06b-layer-violations', 'SQL у роутах, ALS і fastify у сервісі, jose у сховищі', true, [
+    run('npm run boundaries', repo),
+  ]);
+
+  // 7. try/catch у сервісі замість одного глобального обробника (крит. 4, C2).
+  reset();
+  edit(file('src/modules/trips/service.ts'), (t) =>
+    t.replace(
+      'const get = async (tripId: string): Promise<Trip> => owned(await repo.findById(tripId), tripId);',
+      'const get = async (tripId: string): Promise<Trip> => {\n' +
+        '    try {\n      return owned(await repo.findById(tripId), tripId);\n' +
+        "    } catch {\n      throw new NotFoundError('trip_not_found', tripId);\n    }\n  };",
+    ),
+  );
+  must('git add src/modules/trips/service.ts', repo);
+  report('07-try-in-service-commit-rejected', 'try/catch у сервісі trips', true, [
+    run('git commit -m "feat(trips): демо try у сервісі"', repo),
+  ]);
+
+  // 8. Пуш зі зламаним сценарієм API: прибрано перевірку власника — типи, лінт, межі й smoke
+  // цілі, падають лише API-тести (C11).
+  reset();
+  edit(file('src/modules/trips/service.ts'), (t) =>
+    t.replace('if (trip?.ownerId !== currentUser()) {', 'if (trip === null) {'),
+  );
+  must('git add src/modules/trips/service.ts', repo);
+  const brokenApi = run('git commit -m "feat(trips): демо без перевірки власника"', repo);
+  report('08-broken-api-push-rejected', 'пуш без перевірки власника поїздки', true, [
+    brokenApi,
+    run(`git push "${remote}" HEAD:refs/heads/demo-api`, repo),
+  ]);
 } finally {
   rmSync(root, { recursive: true, force: true, maxRetries: 3 });
 }
