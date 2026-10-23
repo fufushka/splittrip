@@ -8,8 +8,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "node --watch src/main.ts",
-    "start": "node dist/main.js",
+    "dev": "node --env-file-if-exists=.env --watch src/main.ts",
+    "start": "node --env-file-if-exists=.env dist/main.js",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "format": "prettier --write \"**/*.{ts,js,cjs,json}\"",

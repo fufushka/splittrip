@@ -82,11 +82,19 @@ function buildShares(trip: Trip, input: ExpenseInput): ExpenseShare[] {
     return ordered.map((p, i) => ({ participantId: p.id, amount: amounts[i] ?? input.amount }));
   }
   assertUnique(split.shares.map((s) => s.participantId));
-  for (const share of split.shares) participant(trip, share.participantId, 'Учасник поділу');
+  const position = new Map(
+    split.shares.map((s) => [
+      s.participantId,
+      participant(trip, s.participantId, 'Учасник поділу').position,
+    ]),
+  );
   if (sum(split.shares.map((s) => s.amount)) !== input.amount) {
     throw new DomainRuleError('shares_sum_mismatch', 'Σ часток має дорівнювати сумі витрати (I1)');
   }
-  return split.shares.map((s) => ({ participantId: s.participantId, amount: s.amount }));
+  // Частки — за порядком додавання учасників, як і при поділі порівну: так їх повертає й БД.
+  return split.shares
+    .map((s) => ({ participantId: s.participantId, amount: s.amount }))
+    .sort((a, b) => (position.get(a.participantId) ?? 0) - (position.get(b.participantId) ?? 0));
 }
 
 function buildExpense(trip: Trip, id: string, input: ExpenseInput): Expense {
