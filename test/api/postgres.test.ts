@@ -233,6 +233,17 @@ describe('fail-fast на старті (крит. 9)', { skip }, () => {
 });
 
 describe('обмеження БД — друга лінія інваріантів', { skip }, () => {
+  it('усі таблиці схеми public під RLS — закриті від Data API (spec-fix-03, п. 1)', async () => {
+    const open = await db<{ relname: string }[]>`
+      select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
+       where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity
+         and c.relname not like 'test\_%'`;
+    assert.deepEqual(
+      open.map((r) => r.relname),
+      [],
+    );
+  });
+
   it('частка учасника з іншої поїздки відхиляється FK (I3), навіть повз домен', async () => {
     const first = await tripWith(1);
     const second = await tripWith(0);
