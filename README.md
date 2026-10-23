@@ -62,7 +62,9 @@ npm run test:api:db     # база run_<id> → міграції → тести 
 
 Застосунок на БД: `.env` за зразком [.env.example](.env.example) (`STORAGE=postgres`,
 `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`), далі `npm run dev`. Для хмари —
-`DATABASE_URL` Supavisor transaction pooler (порт 6543).
+`DATABASE_URL` Supavisor transaction pooler (порт 6543). Передумова хмарного проєкту:
+вимкнено «Confirm email» (Authentication → Sign In / Providers → Email) — підтвердження email
+поза обсягом ([spec-fix-03](docs/specs/lab2-api-db/spec-fix-03.md)).
 
 ## Git-hook-и
 

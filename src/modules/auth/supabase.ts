@@ -85,6 +85,13 @@ export function createSupabaseAuth(options: SupabaseAuthOptions): AuthProvider {
   return {
     async signup(email, password) {
       const { status, json } = await call('/signup', { email, password });
+      if (status === 200 && typeof (json as Partial<SupabaseSession>).access_token !== 'string') {
+        // Проєкт вимагає підтвердження email, а контракт його не підтримує (spec-fix-03, п. 2):
+        // це помилка конфігурації сервера, не клієнта → 500 з причиною в лозі.
+        throw new Error(
+          'Supabase Auth повернув користувача без сесії: вимкніть «Confirm email» у проєкті',
+        );
+      }
       if (status === 200) return session(json);
       if (errorCode(json) === 'user_already_exists') {
         throw new EmailTakenError('email_taken', 'Email уже зареєстровано');
