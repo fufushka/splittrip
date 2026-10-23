@@ -26,7 +26,7 @@ function promptFiles(): string[] {
 const lines = [
   `# Слід ШІ (HEAD ${git(['rev-parse', '--short', 'HEAD']).trim()})`,
   '',
-  'Відтворити: `make ai-trace`. Коміти без трейлера `AI-Prompt` автор зробив сам.',
+  'Відтворити: `npm run ai-trace`. Коміти без трейлера `AI-Prompt` автор зробив сам.',
   '',
 ];
 for (const prompt of promptFiles()) {

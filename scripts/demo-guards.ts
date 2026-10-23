@@ -1,8 +1,8 @@
 /**
  * Відтворювана демонстрація конвеєра (spec.md, крит. 5, 7, 10): у тимчасовому клоні HEAD
- * запускає `make install` + `make check`, робить брудний коміт, коміт із поганим повідомленням,
+ * запускає `npm ci` + `npm run check`, робить брудний коміт, коміт із поганим повідомленням,
  * пуші зі зламаною збіркою та smoke і порушення меж модулів. Реальний вивід кожного
- * сценарію пише в docs/specs/lab1-foundation/reports/. Робочу копію не змінює.
+ * сценарію пише в docs/specs/lab2-api-db/reports/. Робочу копію не змінює.
  */
 import { spawnSync } from 'node:child_process';
 import {
@@ -16,7 +16,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const REPORTS = join(process.cwd(), 'docs/specs/lab1-foundation/reports');
+const REPORTS = join(process.cwd(), 'docs/specs/lab2-api-db/reports');
 const ENV = { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' };
 
 interface Result {
@@ -49,7 +49,7 @@ function report(
   const failed = results.some((r) => r.code !== 0);
   const verdict = expectFail === failed ? 'OK' : 'НЕОЧІКУВАНО';
   const body = [
-    `# Відтворити: make demo (сценарій «${title}»)`,
+    `# Відтворити: npm run demo (сценарій «${title}»)`,
     `# Очікування: ${expectFail ? 'відмова' : 'успіх'}; результат: ${verdict}`,
     `# HEAD: ${head}`,
     '',
@@ -79,10 +79,10 @@ try {
   const file = (path: string): string => join(repo, path);
 
   // 1. Чистий клон: одна команда запускає всі перевірки (крит. 5, 6).
-  report('01-clean-clone-check', 'чистий клон: make install && make check', false, [
-    run('make install', repo),
+  report('01-clean-clone-check', 'чистий клон: npm ci && npm run check', false, [
+    run('npm ci', repo),
     run('git config core.hooksPath', repo),
-    run('make check', repo),
+    run('npm run check', repo),
   ]);
 
   // 2. Брудний коміт: порушення формату й лінту (крит. 7, C1, C2).
@@ -136,7 +136,7 @@ try {
   ]);
 
   // 4b. Пуш зі зламаною збіркою: типи й межі цілі, але src імпортує файл поза rootDir,
-  // тож падає саме `make build` (крит. 7, C7).
+  // тож падає саме `npm run build` (крит. 7, C7).
   reset();
   writeFileSync(file('scripts/outside.ts'), 'export const outside = 1;\n');
   edit(file('src/main.ts'), (t) =>
@@ -185,7 +185,7 @@ try {
     '06-boundaries-violations',
     'обхід index.ts, напрям, цикл, модуль поза архітектурою',
     true,
-    [run('make boundaries', repo)],
+    [run('npm run boundaries', repo)],
   );
 } finally {
   rmSync(root, { recursive: true, force: true, maxRetries: 3 });

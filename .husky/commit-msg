@@ -1,1 +1,1 @@
-make commit-msg MSG="$1"
+npm run commit-msg -- "$1"

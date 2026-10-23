@@ -18,10 +18,6 @@
 ## Вимоги
 
 - **Node.js ≥ 24** — <https://nodejs.org>.
-- **GNU make**. На Linux і macOS він зазвичай уже є. На Windows поставте його одним зі
-  способів і перезапустіть термінал:
-  - `winget install ezwinports.make` — без прав адміністратора;
-  - `choco install make` — у терміналі адміністратора.
 - **git** — hook-и й визначення версії.
 
 ## Запуск
@@ -29,19 +25,20 @@
 ```sh
 git clone https://github.com/fufushka/splittrip.git
 cd splittrip
-make install   # npm ci + автоматичне підключення git-hook-ів
-make check     # усі перевірки: формат, лінт, чистота, типи, межі, збірка, smoke
+npm ci          # залежності + автоматичне підключення git-hook-ів
+npm run check   # усі перевірки: формат, лінт, чистота, типи, межі, збірка, smoke
 ```
 
-`make check` на чистому клоні має пройти без інших кроків.
+`npm run check` на чистому клоні має пройти без інших кроків.
 
 | Команда | Що робить |
 |---|---|
-| `make install` | Встановлює залежності з lock-файлу й підключає hook-и |
-| `make check` | Запускає C1–C3 і C5–C8 ([standarts/checks.md](standarts/checks.md)) |
-| `make format` | Форматує код |
-| `make smoke` | Збирає застосунок і запускає smoke-тест |
-| `make ai-trace` | Показує коміти для кожного промпту в `ai/` |
+| `npm ci` | Встановлює залежності з lock-файлу й підключає hook-и |
+| `npm run check` | Запускає перевірки з [standarts/checks.md](standarts/checks.md) |
+| `npm run format` | Форматує код |
+| `npm run smoke` | Збирає застосунок і запускає smoke-тест |
+| `npm run ai-trace` | Показує коміти для кожного промпту в `ai/` |
+| `npm run demo` | Відтворює відмови перевірок, звіти — у `reports/` лаби |
 | `npm run dev` | Запускає сервер із сирців у режимі спостереження |
 | `npm start` | Запускає зібраний сервер (`PORT`, `HOST`, `APP_VERSION`) |
 
@@ -50,13 +47,13 @@ make check     # усі перевірки: формат, лінт, чистот
 
 ## Git-hook-и
 
-Hook-и підключаються під час `make install`. Кожен лише викликає ціль `make`.
+Hook-и підключаються під час `npm ci` (скрипт `prepare`). Кожен лише викликає `npm run …` ([ADR-0014](docs/adr/0014-npm-scripts-over-makefile.md)).
 
 | Hook | Ціль | Блокує, якщо |
 |---|---|---|
-| pre-commit | `make pre-commit` | формат, лінт (лише доданих файлів) або чистота репо не проходять |
-| commit-msg | `make commit-msg` | повідомлення не за [standarts/commits.md](standarts/commits.md) |
-| pre-push | `make pre-push` | типи, межі модулів, збірка або smoke не проходять |
+| pre-commit | `npm run pre-commit` | формат, лінт (лише доданих файлів) або чистота репо не проходять |
+| commit-msg | `npm run commit-msg` | повідомлення не за [standarts/commits.md](standarts/commits.md) |
+| pre-push | `npm run pre-push` | типи, межі модулів, збірка або smoke не проходять |
 
 ## Залежності
 
