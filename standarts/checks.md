@@ -1,20 +1,20 @@
 # Стандарт: перелік перевірок
 
-Версія: 0.3 · Статус: прийнято
+Версія: 0.4 · Статус: запропоновано
 
 Інструменти для кожної перевірки обираються в ADR після вибору стеку; тут зафіксовано,
 **що** перевіряється, **коли** і **що блокується**. Точка запуску — `npm run …` (ADR-0014).
 
 | ID | Перевірка | Що перевіряється | Як запустити | Коли | Блокує |
 |---|---|---|---|---|---|
-| C1 | Формат | Код і конфіги відповідають форматеру (без змін після його запуску) | `npm run format:check` (виправити: `npm run format`) | pre-commit, `make check` | коміт |
-| C2 | Лінт | Правила лінтера, 0 помилок | `npm run lint` | pre-commit, `make check` | коміт |
-| C3 | Чистота репо | Немає заборонених файлів і секретів; файли без розширення — лише зі списку ([repository.md](repository.md)) | `npm run hygiene` | pre-commit, `make check` | коміт |
+| C1 | Формат | Код і конфіги відповідають форматеру (без змін після його запуску) | `npm run format:check` (виправити: `npm run format`) | pre-commit, `npm run check` | коміт |
+| C2 | Лінт | Правила лінтера, 0 помилок | `npm run lint` | pre-commit, `npm run check` | коміт |
+| C3 | Чистота репо | Немає заборонених файлів і секретів; файли без розширення — лише зі списку ([repository.md](repository.md)) | `npm run hygiene` | pre-commit, `npm run check` | коміт |
 | C4 | Повідомлення коміту | Формат за [commits.md](commits.md); якщо є трейлер `AI-Prompt`, файл промпту існує | автоматично | commit-msg | коміт |
-| C5 | Статичний аналіз | Типи / статичний аналіз, 0 помилок | `npm run typecheck` | pre-push, `make check` | пуш |
-| C6 | Межі модулів | Імпорт лише через публічну точку входу; немає циклів і заборонених напрямів ([architecture.md](../docs/specs/lab2-api-db/architecture.md), розд. 2) | `npm run boundaries` | pre-push, `make check` | пуш |
-| C7 | Збірка | Проєкт збирається без помилок | `npm run build` | pre-push, `make check` | пуш |
-| C8 | Smoke | Старт, `GET /health`, `GET /version` за spec-fix-01 п. 1 | `npm run smoke` | pre-push, `make check` | пуш |
+| C5 | Статичний аналіз | Типи / статичний аналіз, 0 помилок | `npm run typecheck` | pre-push, `npm run check` | пуш |
+| C6 | Межі модулів | Імпорт лише через публічну точку входу; немає циклів і заборонених напрямів ([architecture.md](../docs/specs/lab2-api-db/architecture.md), розд. 2) | `npm run boundaries` | pre-push, `npm run check` | пуш |
+| C7 | Збірка | Проєкт збирається без помилок | `npm run build` | pre-push, `npm run check` | пуш |
+| C8 | Smoke | Старт, `GET /health`, `GET /version` за spec-fix-01 п. 1 | `npm run smoke` | pre-push, `npm run check` | пуш |
 | C9 | Слід ШІ | Список комітів для кожного промпту в `ai/` | `npm run ai-trace` | вручну, перед здачею | — (звіт) |
 | C10 | Демонстрація відмов | Кожна з C1–C8 і C11 справді валиться на порушенні; чистий клон проходить `npm run check` | `npm run demo` | вручну, після зміни перевірок і перед здачею | — (звіти в `reports/`) |
 | C11 | API на статиці | Кожен рядок contract.md (успіх і помилки) на `STORAGE=memory` | `npm run test:api` | pre-push, `npm run check` | пуш |
@@ -45,3 +45,5 @@
   провал». Причина: перевірка секретів у C3 мовчки проходила (audit.md, розбіжність 2).
 - 0.3 — `npm run` замість `make` (ADR-0014); C11, C12 — API-тести на статиці й на БД; C6
   посилається на архітектуру лаби 2. Причина: spec лаби 2, крит. 1, 2, 13.
+- 0.4 — колонка «Коли»: `npm run check` замість `make check`, пропущене в 0.3. Причина:
+  незалежний аудит (`ai/lab2/012`).
