@@ -43,6 +43,7 @@ npm run check   # усі перевірки: формат, лінт, чисто�
 | `npm run db:start` / `db:stop` | Локальний Supabase у Docker: Postgres `54322`, API `54321` |
 | `npm run db:migrate` | Міграції `db/migrations/` на `DATABASE_URL` (типово — локальний Supabase) |
 | `npm run test:api:db` | Ті самі API-тести + тести БД на `STORAGE=postgres` в окремій базі `run_<id>` (C12) |
+| `npm run report:db` | Звіт поведінки на БД: ретраї, збої, fail-fast, N+1 → `reports/09-db-behaviour.txt` |
 | `npm run ai-trace` | Показує коміти для кожного промпту в `ai/` |
 | `npm run demo` | Відтворює відмови перевірок, звіти — у `reports/` лаби |
 | `npm run dev` | Запускає сервер із сирців у режимі спостереження |

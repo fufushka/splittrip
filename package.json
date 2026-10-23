@@ -19,6 +19,7 @@
     "smoke": "npm run build && node --test test/smoke/*.test.ts",
     "test:api": "node --test --test-timeout=120000 test/api/*.test.ts",
     "test:api:db": "node scripts/test-db.ts",
+    "report:db": "node scripts/report-db.ts",
     "db:start": "node scripts/db-start.ts",
     "db:stop": "supabase stop",
     "db:migrate": "node scripts/db-migrate.ts",
