@@ -4,7 +4,14 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 
-import { type Harness, PASSWORD, field, startHarness } from './harness.ts';
+import {
+  type Harness,
+  MODE,
+  PASSWORD,
+  expiredSupabaseToken,
+  field,
+  startHarness,
+} from './harness.ts';
 
 let h: Harness;
 before(async () => {
@@ -14,11 +21,13 @@ after(() => h.close());
 
 describe('auth: реєстрація й логін', () => {
   it('signup → 201 з користувачем і токенами; email у нижньому регістрі', async () => {
+    // Унікальний email: користувачі локального Supabase живуть між прогонами.
+    const local = `Mixed.Case.${String(Date.now())}`;
     const res = await h.call('POST', '/auth/signup', {
-      body: { email: 'Mixed.Case@Example.com', password: PASSWORD },
+      body: { email: `${local}@Example.com`, password: PASSWORD },
     });
     assert.equal(res.status, 201);
-    assert.equal(field(res, 'user', 'email'), 'mixed.case@example.com');
+    assert.equal(field(res, 'user', 'email'), `${local.toLowerCase()}@example.com`);
     assert.equal(typeof field(res, 'accessToken'), 'string');
     assert.equal(typeof field(res, 'refreshToken'), 'string');
     assert.equal(typeof field(res, 'expiresIn'), 'number');
@@ -69,16 +78,23 @@ describe('auth: реєстрація й логін', () => {
 });
 
 describe('auth: refresh і logout', () => {
-  it('refresh → нова пара токенів; старий refresh-токен уже не діє', async () => {
+  // Одноразовість старого refresh-токена не перевіряємо: spec її не вимагає, а Supabase
+  // навмисно дозволяє повтор у межах refresh_token_reuse_interval (паралельні запити).
+  it('refresh → нова пара токенів, новий access-токен працює', async () => {
     const user = await h.user();
-    const first = await h.call('POST', '/auth/refresh', {
+    const res = await h.call('POST', '/auth/refresh', {
       body: { refreshToken: user.refreshToken },
     });
-    assert.equal(first.status, 200);
-    const again = await h.call('POST', '/auth/refresh', {
-      body: { refreshToken: user.refreshToken },
-    });
-    assert.equal(again.status, 401);
+    assert.equal(res.status, 200);
+    assert.notEqual(field(res, 'refreshToken'), user.refreshToken);
+    const list = await h.call('GET', '/trips', { token: field(res, 'accessToken') });
+    assert.equal(list.status, 200);
+  });
+
+  it('невідомий refresh-токен → 401', async () => {
+    const res = await h.call('POST', '/auth/refresh', { body: { refreshToken: 'nope' } });
+    assert.equal(res.status, 401);
+    assert.equal(field(res, 'code'), 'invalid_token');
   });
 
   it('logout → 204; після нього refresh-токен не діє', async () => {
@@ -115,6 +131,13 @@ describe('auth: доступ до /trips', () => {
   });
 
   it('прострочений токен → 401', async () => {
+    if (MODE === 'postgres') {
+      const user = await h.user();
+      const token = await expiredSupabaseToken(user);
+      assert.equal((await h.call('GET', '/trips', { token })).status, 401);
+      return;
+    }
+    // Фейк Auth підписує своїм ключем, тож прострочений токен дає лише окремий екземпляр.
     const expired = await startHarness({ accessTokenTtlSeconds: -10 });
     const user = await expired.user();
     const res = await expired.call('GET', '/trips', { token: user.token });
@@ -122,10 +145,11 @@ describe('auth: доступ до /trips', () => {
     await expired.close();
   });
 
-  it('токен іншого екземпляра (інший ключ підпису) → 401', async () => {
-    const other = await startHarness();
-    const stranger = await other.user();
-    await other.close();
-    assert.equal((await h.call('GET', '/trips', { token: stranger.token })).status, 401);
+  it('токен з правильними claims, підписаний чужим ключем → 401', async () => {
+    const user = await h.user();
+    const token = await h.forgedToken(user);
+    const res = await h.call('GET', '/trips', { token });
+    assert.equal(res.status, 401);
+    assert.equal(field(res, 'code'), 'invalid_token');
   });
 });

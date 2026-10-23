@@ -209,6 +209,29 @@ describe('витрати', () => {
     assert.equal(field(res, 'description'), '');
   });
 
+  it('частки exact — за порядком додавання учасників, як у БД (spec-fix-02, п. 2)', async () => {
+    const id = await trip();
+    const a = await participant(id, 'Аня');
+    const b = await participant(id, 'Богдан');
+    const created = await as('POST', `/trips/${id}/expenses`, {
+      payerId: a,
+      amount: 300,
+      split: {
+        mode: 'exact',
+        shares: [
+          { participantId: b, amount: 200 },
+          { participantId: a, amount: 100 },
+        ],
+      },
+    });
+    const expected = [
+      { participantId: a, amount: 100 },
+      { participantId: b, amount: 200 },
+    ];
+    assert.deepEqual(field(created, 'shares'), expected);
+    assert.deepEqual(field(await as('GET', `/trips/${id}`), 'expenses', 0, 'shares'), expected);
+  });
+
   it('Σ часток ≠ сумі → 422 shares_sum_mismatch (I1)', async () => {
     const id = await trip();
     const a = await participant(id, 'Аня');

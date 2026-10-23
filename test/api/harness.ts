@@ -1,8 +1,12 @@
 /**
  * Спільна обв'язка API-тестів (spec, крит. 1–2): складає той самий застосунок, що й
  * `main.ts`, зі сховищем за `STORAGE` і ганяє запити через `inject` — без мережі.
+ * `STORAGE=postgres` задає `npm run test:api:db` разом з базою прогону й локальним Supabase.
  */
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+import { type JWK, SignJWT, generateKeyPair, importJWK } from 'jose';
 
 import { type App, type ComposeOptions, composeApp } from '../../src/compose.ts';
 
@@ -26,13 +30,63 @@ export interface User {
   readonly refreshToken: string;
 }
 
+export type Mode = 'memory' | 'postgres';
+
+export const MODE: Mode = process.env.STORAGE === 'postgres' ? 'postgres' : 'memory';
+
 export interface Harness {
   readonly app: App;
+  /** SQL-запити до БД (лише postgres) — лічильник N+1. */
+  readonly queries: string[];
   /** JSON-рядки логів, записані застосунком. */
   readonly logs: Record<string, unknown>[];
   call(method: string, url: string, options?: CallOptions): Promise<Reply>;
   user(): Promise<User>;
+  /** Токен з правильними claims, але підписаний чужим ключем. */
+  forgedToken(user: User): Promise<string>;
   close(): Promise<void>;
+}
+
+const MEMORY_ISSUER = 'splittrip-memory-auth';
+
+function issuer(): string {
+  return MODE === 'memory' ? MEMORY_ISSUER : `${process.env.SUPABASE_URL ?? ''}/auth/v1`;
+}
+
+/** Приватний ключ локального Supabase (`supabase/signing_keys.json`, не комітиться). */
+function localSigningKey(): JWK & { kid: string } {
+  const path = process.env.SUPABASE_SIGNING_KEYS ?? 'supabase/signing_keys.json';
+  const [key] = JSON.parse(readFileSync(path, 'utf8')) as (JWK & { kid: string })[];
+  if (key === undefined) throw new Error(`Немає ключа в ${path}`);
+  return key;
+}
+
+async function sign(
+  user: User,
+  key: Parameters<SignJWT['sign']>[0],
+  kid: string,
+  expiresAt: number,
+): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  return new SignJWT({ role: 'authenticated', email: user.email })
+    .setProtectedHeader({ alg: 'ES256', kid })
+    .setSubject(user.id)
+    .setIssuer(issuer())
+    .setAudience('authenticated')
+    .setIssuedAt(Math.min(now, expiresAt - 60))
+    .setExpirationTime(expiresAt)
+    .sign(key);
+}
+
+/** Прострочений, але справжньо підписаний токен локального Supabase (лише postgres). */
+export async function expiredSupabaseToken(user: User): Promise<string> {
+  // key_ops ключа Supabase містить і `verify` — для імпорту як ключа підпису прибираємо.
+  const signing = localSigningKey();
+  const jwk: JWK = { ...signing };
+  delete jwk.key_ops;
+  delete jwk.use;
+  const key = await importJWK(jwk, 'ES256');
+  return sign(user, key, signing.kid, Math.floor(Date.now() / 1000) - 60);
 }
 
 export const PASSWORD = 'correct-horse-battery';
@@ -41,8 +95,10 @@ export async function startHarness(
   options: Omit<ComposeOptions, 'logStream'> = {},
 ): Promise<Harness> {
   const logs: Record<string, unknown>[] = [];
+  const queries: string[] = [];
   const app = await composeApp({
     ...options,
+    onQuery: (query) => queries.push(query),
     env: { LOG_LEVEL: 'debug', ...process.env, ...options.env },
     logStream: {
       write(line) {
@@ -72,8 +128,14 @@ export async function startHarness(
 
   return {
     app,
+    queries,
     logs,
     call,
+    async forgedToken(user) {
+      const { privateKey } = await generateKeyPair('ES256');
+      const kid = MODE === 'postgres' ? localSigningKey().kid : 'forged';
+      return sign(user, privateKey, kid, Math.floor(Date.now() / 1000) + 3600);
+    },
     async user() {
       const email = `user-${randomUUID()}@example.com`;
       const res = await call('POST', '/auth/signup', { body: { email, password: PASSWORD } });

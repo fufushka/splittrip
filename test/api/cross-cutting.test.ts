@@ -207,7 +207,10 @@ describe('логи (крит. 5, 6)', () => {
     assert.equal(res.status, 201);
     const lines = h.logs.filter((l) => l.processId === processId);
     const messages = lines.map((l) => l.msg);
-    assert.ok(messages.includes('storage(memory): create'), 'лог сховища');
+    assert.ok(
+      messages.some((m) => typeof m === 'string' && /^storage\(\w+\): create$/.test(m)),
+      'лог сховища',
+    );
     assert.ok(messages.includes('trip created'), 'лог сервісу');
     assert.ok(messages.includes('request completed'), 'лог http');
     for (const line of lines.filter((l) => l.msg !== undefined && l.msg !== 'request rejected')) {
