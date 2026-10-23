@@ -6,12 +6,15 @@
  */
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { type Server, type Socket, createConnection, createServer } from 'node:net';
 import { after, before, describe, it } from 'node:test';
 
 import postgres from 'postgres';
 
 import { type App, composeApp } from '../../src/compose.ts';
+import { uuidv7 } from '../../src/modules/ids/index.ts';
+import { createPostgresStorage } from '../../src/modules/storage/index.ts';
 import { type Harness, MODE, type User, field, startHarness } from './harness.ts';
 
 const skip = MODE !== 'postgres' && 'лише для npm run test:api:db';
@@ -229,6 +232,48 @@ describe('fail-fast на старті (крит. 9)', { skip }, () => {
     assert.equal(code, 1, `процес не впав за 10 с (код ${String(code)}); stderr: ${stderr}`);
     assert.match(stderr, /не вдалося стартувати/);
     assert.ok(Date.now() - started < 10_000, `${String(Date.now() - started)} мс`);
+  });
+});
+
+describe('сховище напряму: повтори й покинуті ключі (spec-fix-04, п. 3–4)', { skip }, () => {
+  const owner = randomUUID();
+
+  it('повторне create тієї самої поїздки (COMMIT з невідомим результатом) — без помилки', async () => {
+    const storage = await createPostgresStorage({ url: DATABASE_URL, prepare: true });
+    const trip = {
+      id: uuidv7(),
+      ownerId: owner,
+      name: 'Повтор',
+      currency: 'UAH',
+      status: 'open' as const,
+      closedAt: null,
+      createdAt: new Date(),
+      participants: [],
+      expenses: [],
+      transfers: [],
+    };
+    await storage.trips.create(trip);
+    await storage.trips.create(trip);
+    const rows = await db`select 1 from trips where id = ${trip.id}`;
+    assert.equal(rows.length, 1);
+    await assert.rejects(storage.trips.create({ ...trip, ownerId: randomUUID() }), /Інваріант/);
+    await storage.close();
+  });
+
+  it('in_progress ключ перезаймається лише після lease (таблиця idempotency_keys)', async () => {
+    const storage = await createPostgresStorage({ url: DATABASE_URL, prepare: true });
+    const store = storage.idempotency;
+    const t0 = Date.now();
+    const at = (s: number) => new Date(t0 + s * 1000);
+    const limits = (s: number) => ({ expiredBefore: at(s - 86_400), abandonedBefore: at(s - 60) });
+    assert.equal(await store.reserve(owner, 'k-lease', 'h', at(0), limits(0)), null);
+    const busy = await store.reserve(owner, 'k-lease', 'h', at(30), limits(30));
+    assert.equal(busy?.response, null);
+    assert.equal(await store.reserve(owner, 'k-lease', 'h', at(61), limits(61)), null);
+    await store.complete(owner, 'k-lease', { status: 201, body: '{}' });
+    const done = await store.reserve(owner, 'k-lease', 'h', at(600), limits(600));
+    assert.deepEqual(done?.response, { status: 201, body: '{}' });
+    await storage.close();
   });
 });
 

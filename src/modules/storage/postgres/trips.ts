@@ -208,9 +208,20 @@ export function createPostgresTripRepository(sql: Sql): TripRepository {
   return {
     async create(trip) {
       await transaction(sql, async (tx) => {
-        await tx`insert into trips (id, owner_id, name, currency, status, closed_at, created_at)
-                 values (${trip.id}, ${trip.ownerId}, ${trip.name}, ${trip.currency},
-                         ${trip.status}, ${trip.closedAt}, ${trip.createdAt})`;
+        // Повтор після обриву на COMMIT (результат невідомий) не дає 23505: та сама поїздка
+        // вже є — успіх; чужа з тим самим id — неможлива за UUIDv7 (spec-fix-04, п. 4).
+        const inserted = await tx`
+          insert into trips (id, owner_id, name, currency, status, closed_at, created_at)
+          values (${trip.id}, ${trip.ownerId}, ${trip.name}, ${trip.currency},
+                  ${trip.status}, ${trip.closedAt}, ${trip.createdAt})
+          on conflict (id) do nothing
+          returning 1`;
+        if (inserted.length > 0) return;
+        const [existing] = await tx<{ owner_id: string }[]>`
+          select owner_id from trips where id = ${trip.id}`;
+        if (existing?.owner_id !== trip.ownerId) {
+          throw new Error(`Інваріант: id поїздки ${trip.id} уже зайнятий іншим власником`);
+        }
       });
       log.debug({ tripId: trip.id }, 'storage(postgres): create');
     },
