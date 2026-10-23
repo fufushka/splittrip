@@ -14,6 +14,7 @@
 | Лаба | Точка входу для рев'ю |
 |---|---|
 | 1 — фундамент і структура | [DEFENSE.md](docs/specs/lab1-foundation/DEFENSE.md) |
+| 2 — HTTP API і база даних | [DEFENSE.md](docs/specs/lab2-api-db/DEFENSE.md) |
 
 ## Вимоги
 
