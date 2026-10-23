@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url';
 
 export const UNKNOWN_VERSION = 'unknown';
 
+/** Найдовше, скільки `/ready` чекає на джерело даних (spec-fix-04, п. 6). */
+export const READY_TIMEOUT_MS = 2000;
+
 const COMMIT_SHA = /^[0-9a-f]{40}$/;
 
 export interface SystemInfo {
@@ -41,10 +44,14 @@ export function createSystemInfo(
 ): SystemInfo {
   return {
     version: resolveVersion(env),
+    // БД, що прийняла з'єднання, але не відповідає, не повинна вішати /ready (spec-fix-04, п. 6).
     ready: () =>
-      ping().then(
-        () => true,
-        () => false,
-      ),
+      Promise.race([
+        ping().then(
+          () => true,
+          () => false,
+        ),
+        new Promise<boolean>((resolve) => setTimeout(resolve, READY_TIMEOUT_MS, false).unref()),
+      ]),
   };
 }

@@ -130,16 +130,25 @@ describe('ретраї тимчасових помилок (крит. 8)', { ski
 });
 
 /** TCP-проксі до БД, який можна «вимкнути» посеред роботи — імітація падіння джерела. */
-async function dbProxy(target: URL): Promise<{ url: string; down(): void; up(): Promise<void> }> {
+/** `freeze()` — з'єднання живі, але дані не проходять: БД «зависла» (spec-fix-04, п. 6). */
+async function dbProxy(
+  target: URL,
+): Promise<{ url: string; down(): void; up(): Promise<void>; freeze(): void }> {
   const sockets = new Set<Socket>();
   let server: Server | undefined;
   let port = 0;
+  let frozen = false;
   const up = () =>
     new Promise<void>((resolve) => {
       server = createServer((client) => {
         const upstream = createConnection(Number(target.port), target.hostname);
         sockets.add(client).add(upstream);
-        client.pipe(upstream).pipe(client);
+        client.on('data', (chunk) => {
+          if (!frozen) upstream.write(chunk);
+        });
+        upstream.on('data', (chunk) => {
+          if (!frozen) client.write(chunk);
+        });
         for (const s of [client, upstream]) {
           s.on('error', () => {
             client.destroy();
@@ -160,6 +169,9 @@ async function dbProxy(target: URL): Promise<{ url: string; down(): void; up(): 
   url.port = String(port);
   return {
     url: url.href,
+    freeze() {
+      frozen = true;
+    },
     down() {
       server?.close();
       for (const s of sockets) s.destroy();
@@ -191,6 +203,21 @@ describe('збій джерела під час роботи (крит. 9)', { s
     await proxy.up();
     assert.equal((await app.call('GET', url, { token: user.token })).status, 200);
     assert.equal((await app.call('GET', '/ready')).status, 200);
+    proxy.down();
+    await app.close();
+  });
+});
+
+describe('/ready не висить на «завислій» БД (spec-fix-04, п. 6)', { skip }, () => {
+  it('з’єднання живе, відповіді немає → /ready 503 за ≤ 3 с', async () => {
+    const proxy = await dbProxy(new URL(DATABASE_URL));
+    const app = await startHarness({ env: { DATABASE_URL: proxy.url } });
+    assert.equal((await app.call('GET', '/ready')).status, 200);
+    proxy.freeze();
+    const started = Date.now();
+    const res = await app.call('GET', '/ready');
+    assert.equal(res.status, 503);
+    assert.ok(Date.now() - started < 3000, `${String(Date.now() - started)} мс`);
     proxy.down();
     await app.close();
   });
