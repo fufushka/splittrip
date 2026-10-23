@@ -17,14 +17,16 @@
     "lint": "eslint --max-warnings=0 .",
     "boundaries": "depcruise src --config .dependency-cruiser.cjs",
     "smoke": "npm run build && node --test test/smoke/*.test.ts",
+    "test:api": "node --test test/api/*.test.ts",
+    "test:unit": "node --test test/unit/*.test.ts",
     "hygiene": "node scripts/check-hygiene.ts",
     "commit-msg": "node scripts/check-commit-msg.ts",
     "ai-trace": "node scripts/ai-trace.ts",
     "prepare": "husky",
     "pre-commit": "lint-staged && npm run hygiene",
     "demo": "node scripts/demo-guards.ts",
-    "check": "npm run format:check && npm run lint && npm run hygiene && npm run typecheck && npm run boundaries && npm run smoke",
-    "pre-push": "npm run typecheck && npm run boundaries && npm run smoke"
+    "check": "npm run format:check && npm run lint && npm run hygiene && npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api",
+    "pre-push": "npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

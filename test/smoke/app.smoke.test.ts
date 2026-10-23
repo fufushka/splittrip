@@ -73,7 +73,7 @@ async function getJson(url: string): Promise<{ status: number; body: unknown }> 
 
 describe('smoke: зібраний застосунок', () => {
   it('зібраний вхід dist/main.js існує', () => {
-    assert.ok(existsSync(ENTRY), `Немає ${ENTRY} — спершу make build`);
+    assert.ok(existsSync(ENTRY), `Немає ${ENTRY} — спершу npm run build`);
   });
 
   it('стартує й відповідає на /health', async () => {

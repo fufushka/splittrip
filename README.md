@@ -37,13 +37,16 @@ npm run check   # усі перевірки: формат, лінт, чисто�
 | `npm run check` | Запускає перевірки з [standarts/checks.md](standarts/checks.md) |
 | `npm run format` | Форматує код |
 | `npm run smoke` | Збирає застосунок і запускає smoke-тест |
+| `npm run test:unit` | Модульні тести чистих модулів (`ids`, `money`, `balances`) |
+| `npm run test:api` | API-тести всіх сценаріїв на `STORAGE=memory` (C11) |
 | `npm run ai-trace` | Показує коміти для кожного промпту в `ai/` |
 | `npm run demo` | Відтворює відмови перевірок, звіти — у `reports/` лаби |
 | `npm run dev` | Запускає сервер із сирців у режимі спостереження |
-| `npm start` | Запускає зібраний сервер (`PORT`, `HOST`, `APP_VERSION`) |
+| `npm start` | Запускає зібраний сервер (`PORT`, `HOST`, `APP_VERSION`, `STORAGE`, `LOG_LEVEL`) |
 
-Ендпоінти: `GET /health` → `{"status":"ok"}`, `GET /version` → `{"version":"<sha>"}`
-або `{"version":"unknown"}`.
+API — [contract.md](docs/specs/lab2-api-db/contract.md): `/auth/*`, `/trips*`, `/health`,
+`/ready`, `/version`. `STORAGE=memory` (типово) — усе в пам'яті процесу, включно з фейковим
+Auth: дані зникають після перезапуску.
 
 ## Git-hook-и
 
@@ -74,9 +77,12 @@ Hook-и підключаються під час `npm ci` (скрипт `prepare
 ## Структура
 
 ```
-src/main.ts            composition root
-src/modules/<модуль>/  money, balances, trips, system, http; вхід — index.ts
+src/main.ts            точка входу процесу
+src/compose.ts         composition root: сховище, Auth, сервіси, сервер (ADR-0016)
+src/modules/<модуль>/  вхід — index.ts; перелік і межі — architecture.md лаби 2
 test/smoke/            smoke-тест зібраного застосунку
+test/unit/             модульні тести чистих модулів
+test/api/              API-тести сценаріїв (memory, з лаби 2 — і postgres)
 scripts/               власні перевірки C3, C4, C9
 standarts/             інженерні стандарти проєкту
 docs/adr/              архітектурні рішення (MADR)
