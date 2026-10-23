@@ -17,7 +17,8 @@ function promptFiles(): string[] {
     .filter((entry) => entry.isDirectory())
     .flatMap((dir) =>
       readdirSync(join(AI_DIR, dir.name))
-        .filter((name) => name.endsWith('.md'))
+        // NNNa-ai-*.md — питання ШІ, не промпти автора (ai-workflow 0.4).
+        .filter((name) => name.endsWith('.md') && !/^\d{3}a-ai-/.test(name))
         .map((name) => `${AI_DIR}/${dir.name}/${name}`),
     )
     .sort();
