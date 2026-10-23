@@ -1,5 +1,5 @@
 /**
- * Публічна точка входу модуля `system`: стан і версія застосунку (spec-fix-01, п. 1).
+ * Публічна точка входу модуля `system`: стан, готовність і версія застосунку (spec-fix-01, п. 1).
  */
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,8 @@ const COMMIT_SHA = /^[0-9a-f]{40}$/;
 
 export interface SystemInfo {
   readonly version: string;
+  /** Готовність приймати запити: джерело даних відповідає (`/ready`, spec «Збої»). */
+  ready(): Promise<boolean>;
 }
 
 function readGitHead(): string | undefined {
@@ -32,6 +34,17 @@ export function resolveVersion(env: NodeJS.ProcessEnv = process.env): string {
   return candidate !== undefined && COMMIT_SHA.test(candidate) ? candidate : UNKNOWN_VERSION;
 }
 
-export function createSystemInfo(env: NodeJS.ProcessEnv = process.env): SystemInfo {
-  return { version: resolveVersion(env) };
+/** `ping` — перевірка джерела даних від `storage`; передає composition root. */
+export function createSystemInfo(
+  env: NodeJS.ProcessEnv = process.env,
+  ping: () => Promise<void> = () => Promise.resolve(),
+): SystemInfo {
+  return {
+    version: resolveVersion(env),
+    ready: () =>
+      ping().then(
+        () => true,
+        () => false,
+      ),
+  };
 }

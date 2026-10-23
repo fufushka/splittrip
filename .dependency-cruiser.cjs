@@ -1,6 +1,6 @@
-// Межі модулів з architecture.md, розд. 3 (ADR-0006). Номери правил — з architecture.md.
+// Межі модулів з architecture.md лаби 2, розд. 2 (ADR-0006). Номери правил — звідти.
 const MODULE = '^src/modules/';
-const UNKNOWN_MODULE = `${MODULE}(?!(money|balances|trips|system|http)/)`;
+const UNKNOWN_MODULE = `${MODULE}(?!(money|balances|trips|system|http|context|auth|idempotency|storage|ids)/)`;
 const EXTERNAL = [
   'core',
   'npm',
@@ -25,10 +25,15 @@ function onlyAllowed(name, allowed) {
 module.exports = {
   forbidden: [
     onlyAllowed('money', []),
+    onlyAllowed('ids', []),
     onlyAllowed('balances', ['money']),
-    onlyAllowed('trips', ['balances', 'money']),
+    onlyAllowed('context', []),
+    onlyAllowed('trips', ['balances', 'money', 'context', 'ids']),
+    onlyAllowed('idempotency', ['context']),
+    onlyAllowed('auth', ['context']),
+    onlyAllowed('storage', ['trips', 'idempotency', 'money', 'context', 'ids']),
     onlyAllowed('system', []),
-    onlyAllowed('http', ['trips', 'system']),
+    onlyAllowed('http', ['trips', 'auth', 'context', 'idempotency', 'system', 'ids']),
     {
       name: 'unknown-module',
       comment: 'Модулі — лише ті, що описані в architecture.md (крит. 9)',
@@ -68,26 +73,54 @@ module.exports = {
       name: 'pure-domain',
       comment: 'Доменні модулі не імпортують зовнішні пакети й node:* (правило 4)',
       severity: 'error',
-      from: { path: `${MODULE}(money|balances|trips)/` },
+      from: { path: `${MODULE}(money|balances|trips|ids)/` },
       to: { dependencyTypes: EXTERNAL },
     },
     {
       name: 'fastify-only-in-http',
-      comment: 'fastify імпортує лише http (правило 5)',
+      comment: 'fastify імпортує лише http (правило 3)',
       severity: 'error',
       from: { pathNot: `${MODULE}http/` },
       to: { path: 'node_modules/fastify/' },
     },
     {
       name: 'child-process-only-in-system',
-      comment: 'node:child_process імпортує лише system (правило 5)',
+      comment: 'node:child_process імпортує лише system (правило 3)',
       severity: 'error',
       from: { pathNot: `${MODULE}system/` },
       to: { dependencyTypes: ['core'], path: '^(node:)?child_process$' },
     },
     {
+      name: 'postgres-only-in-storage',
+      comment: 'Драйвер БД імпортує лише storage: SQL і транзакції — лише там (правило 3)',
+      severity: 'error',
+      from: { path: MODULE, pathNot: `${MODULE}storage/` },
+      to: { path: 'node_modules/postgres/' },
+    },
+    {
+      name: 'jose-only-in-auth',
+      comment: 'jose імпортує лише auth (правило 3)',
+      severity: 'error',
+      from: { path: MODULE, pathNot: `${MODULE}auth/` },
+      to: { path: 'node_modules/jose/' },
+    },
+    {
+      name: 'async-hooks-only-in-context',
+      comment: 'node:async_hooks імпортує лише context (правило 3)',
+      severity: 'error',
+      from: { path: MODULE, pathNot: `${MODULE}context/` },
+      to: { dependencyTypes: ['core'], path: '^(node:)?async_hooks$' },
+    },
+    {
+      name: 'crypto-only-in-idempotency',
+      comment: 'node:crypto імпортує лише idempotency (правило 3)',
+      severity: 'error',
+      from: { path: MODULE, pathNot: `${MODULE}idempotency/` },
+      to: { dependencyTypes: ['core'], path: '^(node:)?crypto$' },
+    },
+    {
       name: 'no-import-main',
-      comment: 'Ніхто не імпортує main.ts (правило 6)',
+      comment: 'Ніхто не імпортує main.ts (правило 1)',
       severity: 'error',
       from: {},
       to: { path: '^src/main\\.ts$' },
