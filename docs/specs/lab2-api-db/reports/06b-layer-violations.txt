@@ -1,6 +1,6 @@
 # Відтворити: npm run demo (сценарій «SQL у роутах, ALS і fastify у сервісі, jose у сховищі»)
 # Очікування: відмова; результат: OK
-# HEAD: bb6d03ab49fabc0bb1572939951409e10f9fc19f
+# HEAD: 9d423a3266b728ab60bb3fa5db7181c30b439255
 
 $ npm run boundaries
 > splittrip@0.1.0 boundaries
