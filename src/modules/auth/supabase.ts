@@ -64,9 +64,21 @@ export function createSupabaseAuth(options: SupabaseAuthOptions): AuthProvider {
     }).catch((error: unknown) => {
       throw unavailable(error);
     });
-    if (res.status >= 500) throw unavailable(new Error(`Supabase Auth ${String(res.status)}`));
-    const text = await res.text();
-    return { status: res.status, json: text === '' ? null : (JSON.parse(text) as unknown) };
+    // 5xx і rate limit (429) — тимчасово недоступно, а не «невірний пароль» (spec-fix-04, п. 5).
+    if (res.status >= 500 || res.status === 429) {
+      throw unavailable(new Error(`Supabase Auth ${String(res.status)}`));
+    }
+    const text = await res.text().catch((error: unknown) => {
+      throw unavailable(error);
+    });
+    if (text === '') return { status: res.status, json: null };
+    // Не-JSON (HTML від проксі) — відповідь не за контрактом Auth API, а не помилка клієнта.
+    const json = await Promise.resolve(text)
+      .then((t) => JSON.parse(t) as unknown)
+      .catch((error: unknown) => {
+        throw unavailable(error);
+      });
+    return { status: res.status, json };
   };
 
   const session = (json: unknown): Session => {

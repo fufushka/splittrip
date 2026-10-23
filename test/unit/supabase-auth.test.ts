@@ -64,6 +64,19 @@ describe('auth: адаптер Supabase', () => {
     await assert.rejects(auth.login('a@example.com', 'x'), { name: 'AuthUnavailableError' });
   });
 
+  it('429 і не-JSON тіло → AuthUnavailableError, а не 401/400/500 (spec-fix-04, п. 5)', async () => {
+    const auth = createSupabaseAuth({ url, apiKey: 'sb_publishable_test' });
+    handler = json(429, { error_code: 'over_request_rate_limit' });
+    await assert.rejects(auth.login('a@example.com', 'x'), { name: 'AuthUnavailableError' });
+    await assert.rejects(auth.signup('a@example.com', 'correct-horse'), {
+      name: 'AuthUnavailableError',
+    });
+    handler = (_req, res) => {
+      res.writeHead(400, { 'content-type': 'text/html' }).end('<html>Bad gateway</html>');
+    };
+    await assert.rejects(auth.login('a@example.com', 'x'), { name: 'AuthUnavailableError' });
+  });
+
   it('apikey передається в кожен запит; паролі не йдуть у query', async () => {
     let seen: IncomingMessage | undefined;
     handler = (req, res) => {
