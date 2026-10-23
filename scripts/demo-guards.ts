@@ -9,6 +9,7 @@ import {
   appendFileSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -68,9 +69,12 @@ const head = run('git rev-parse HEAD', process.cwd()).output;
 const root = mkdtempSync(join(tmpdir(), 'splittrip-demo-'));
 const repo = join(root, 'repo');
 const remote = join(root, 'remote.git');
-// Старі звіти прибираємо, щоб у reports/ лишався вивід лише цього запуску.
-rmSync(REPORTS, { recursive: true, force: true });
+// Прибираємо лише власні старі звіти (01–08): у reports/ лаби 2 лежать і звіти інших
+// команд (report:db, cloud-run), яких demo не відтворює.
 mkdirSync(REPORTS, { recursive: true });
+for (const name of readdirSync(REPORTS)) {
+  if (/^0[1-8][a-z]?-.*\.txt$/.test(name)) rmSync(join(REPORTS, name));
+}
 
 try {
   console.log(`Клон HEAD ${head} у ${repo}`);
