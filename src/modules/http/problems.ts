@@ -4,7 +4,12 @@
  */
 import type { FastifyError, FastifyInstance } from 'fastify';
 
-import { AuthUnavailableError, EmailTakenError, UnauthorizedError } from '../auth/index.ts';
+import {
+  AuthRejectedError,
+  AuthUnavailableError,
+  EmailTakenError,
+  UnauthorizedError,
+} from '../auth/index.ts';
 import { log } from '../context/index.ts';
 import { IdempotencyInProgressError, IdempotencyMismatchError } from '../idempotency/index.ts';
 import {
@@ -47,6 +52,7 @@ function toProblem(error: unknown): Problem {
   if (error instanceof DomainRuleError) return problem(422, error.code, error.message);
   if (error instanceof UnauthorizedError) return problem(401, error.code, error.message);
   if (error instanceof EmailTakenError) return problem(409, error.code, error.message);
+  if (error instanceof AuthRejectedError) return problem(400, error.code, error.message);
   if (error instanceof IdempotencyInProgressError) return problem(409, error.code, error.message);
   if (error instanceof IdempotencyMismatchError) return problem(422, error.code, error.message);
   if (error instanceof SourceUnavailableError || error instanceof AuthUnavailableError) {

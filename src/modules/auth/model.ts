@@ -23,8 +23,8 @@ export interface AuthProvider {
 export class AuthError extends Error {
   readonly code: string;
 
-  constructor(code: string, message: string) {
-    super(message);
+  constructor(code: string, message: string, options?: ErrorOptions) {
+    super(message, options);
     this.code = code;
   }
 }
@@ -36,6 +36,11 @@ export class UnauthorizedError extends AuthError {
 
 export class EmailTakenError extends AuthError {
   override readonly name = 'EmailTakenError';
+}
+
+/** Supabase Auth відхилив дані, які пройшли нашу схему (напр. слабкий пароль) → 400. */
+export class AuthRejectedError extends AuthError {
+  override readonly name = 'AuthRejectedError';
 }
 
 /** Supabase Auth недоступний або відповів не за контрактом (→ 503). */
