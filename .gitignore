@@ -1,0 +1,19 @@
+# Залежності та артефакти збірки
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Логи
+*.log
+
+# Секрети
+.env
+.env.*
+!.env.example
+
+# IDE та ОС
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

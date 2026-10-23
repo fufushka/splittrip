@@ -1,0 +1,25 @@
+# Відтворити: make demo (сценарій «коміт із .env, приватним ключем і файлом поза списком»)
+# Очікування: відмова; результат: OK
+# HEAD: 4ff91b5a77d574b7b6dcfcd8e7fca255c5d09498
+
+$ git commit -m "chore: демо брудного репозиторію"
+make[1]: Entering directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+npm run pre-commit
+
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+→ lint-staged could not find any staged files matching configured tasks.
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій не чистий
+  ✘ .env: файл із секретами не комітиться
+  ✘ .env: файл без розширення не з дозволеного списку
+  ✘ NOTES: файл без розширення не з дозволеного списку
+  ✘ docs/key.txt:1: схоже на приватний ключ
+make[1]: *** [Makefile:43: pre-commit] Error 1
+make[1]: Leaving directory 'C:/Users/dimau/AppData/Local/Temp/splittrip-demo-P9nkte/repo'
+husky - pre-commit script failed (code 2)
+[код виходу: 1]
