@@ -60,6 +60,7 @@ Hook-и підключаються під час `npm ci` (скрипт `prepare
 | Пакет | Навіщо |
 |---|---|
 | `fastify` | HTTP-сервер зі схемами валідації й логером ([ADR-0003](docs/adr/0003-fastify-http.md)) |
+| `jose` | Перевірка й (у фейку) підпис JWT Supabase Auth ([ADR-0017](docs/adr/0017-supabase-auth-http-and-jwks.md)) |
 | `typescript` | Статичний аналіз типів і збірка `dist/`; ~6.0 через typescript-eslint ([ADR-0001](docs/adr/0001-typescript-on-node-24.md)) |
 | `@types/node` | Типи вбудованих модулів Node 24 |
 | `prettier` | Форматер коду й конфігів — перевірка C1 ([ADR-0005](docs/adr/0005-prettier-eslint-tsc.md)) |
