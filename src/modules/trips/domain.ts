@@ -78,6 +78,13 @@ function buildShares(trip: Trip, input: ExpenseInput): ExpenseShare[] {
     const ordered = split.participantIds
       .map((id) => participant(trip, id, 'Учасник поділу'))
       .sort((a, b) => a.position - b.position);
+    // Кожна частка ≥ 1 копійки (I6): інакше allocateEqually дасть 0 (spec-fix-04, п. 1).
+    if (input.amount < ordered.length) {
+      throw new DomainRuleError(
+        'share_too_small',
+        `${String(input.amount)} коп. не поділити на ${String(ordered.length)} учасників`,
+      );
+    }
     const amounts = allocateEqually(input.amount, ordered.length);
     return ordered.map((p, i) => ({ participantId: p.id, amount: amounts[i] ?? input.amount }));
   }

@@ -248,6 +248,29 @@ describe('витрати', () => {
     assert.deepEqual(field(await as('GET', `/trips/${id}`), 'expenses', 0, 'shares'), expected);
   });
 
+  it('порівну, менше копійки на учасника → 422 share_too_small (spec-fix-04, п. 1)', async () => {
+    // Знайшов автор (ai/lab2/013): memory віддавав 201 з часткою 0, Postgres — 500.
+    const id = await trip();
+    const a = await participant(id, 'Аня');
+    const b = await participant(id, 'Богдан');
+    const tooSmall = await as('POST', `/trips/${id}/expenses`, {
+      payerId: a,
+      amount: 1,
+      split: { mode: 'equal', participantIds: [a, b] },
+    });
+    assertProblem(tooSmall, 422, 'share_too_small');
+    const enough = await as('POST', `/trips/${id}/expenses`, {
+      payerId: a,
+      amount: 2,
+      split: { mode: 'equal', participantIds: [a, b] },
+    });
+    assert.equal(enough.status, 201);
+    assert.deepEqual(
+      field<{ amount: number }[]>(enough, 'shares').map((s) => s.amount),
+      [1, 1],
+    );
+  });
+
   it('Σ часток ≠ сумі → 422 shares_sum_mismatch (I1)', async () => {
     const id = await trip();
     const a = await participant(id, 'Аня');
