@@ -21,15 +21,16 @@ export interface IdempotencyRecord {
 /** Порт сховища ключів; ключ унікальний у межах власника. */
 export interface IdempotencyStore {
   /**
-   * Атомарно резервує ключ (`in_progress`). Якщо ключ уже є й не старший за `expiredBefore`,
-   * повертає наявний запис і нічого не змінює; прострочений запис замінює.
+   * Атомарно резервує ключ (`in_progress`). Наявний запис повертає без змін, крім двох
+   * випадків, коли замінює його: створений раніше за `expiredBefore` (TTL) або ще
+   * `in_progress`, але створений раніше за `abandonedBefore` — запит покинуто (spec-fix-04, п. 3).
    */
   reserve(
     ownerId: string,
     key: string,
     requestHash: string,
     now: Date,
-    expiredBefore: Date,
+    limits: { readonly expiredBefore: Date; readonly abandonedBefore: Date },
   ): Promise<IdempotencyRecord | null>;
   complete(ownerId: string, key: string, response: StoredResponse): Promise<void>;
   release(ownerId: string, key: string): Promise<void>;
@@ -55,6 +56,8 @@ export class IdempotencyMismatchError extends IdempotencyError {
 }
 
 export const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
+/** `in_progress` довше за це — процес упав або збереження відповіді не вдалося. */
+export const IDEMPOTENCY_LEASE_MS = 60 * 1000;
 
 export type BeginResult =
   { readonly kind: 'execute' } | { readonly kind: 'replay'; readonly response: StoredResponse };
@@ -81,13 +84,10 @@ export function createIdempotency({ store, now = () => new Date() }: Idempotency
     async begin(key, request) {
       const hash = requestHash(request);
       const at = now();
-      const existing = await store.reserve(
-        currentUser(),
-        key,
-        hash,
-        at,
-        new Date(at.getTime() - IDEMPOTENCY_TTL_MS),
-      );
+      const existing = await store.reserve(currentUser(), key, hash, at, {
+        expiredBefore: new Date(at.getTime() - IDEMPOTENCY_TTL_MS),
+        abandonedBefore: new Date(at.getTime() - IDEMPOTENCY_LEASE_MS),
+      });
       if (existing === null) return { kind: 'execute' };
       if (existing.requestHash !== hash) {
         throw new IdempotencyMismatchError(

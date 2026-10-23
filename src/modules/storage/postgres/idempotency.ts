@@ -15,10 +15,13 @@ interface KeyRow {
 
 export function createPostgresIdempotencyStore(sql: Sql): IdempotencyStore {
   return {
-    reserve(ownerId, key, requestHash, now, expiredBefore) {
+    reserve(ownerId, key, requestHash, now, { expiredBefore, abandonedBefore }) {
       return transaction(sql, async (tx): Promise<IdempotencyRecord | null> => {
+        // Прострочений (TTL) або покинутий `in_progress` ключ звільняється (spec-fix-04, п. 3).
         await tx`delete from idempotency_keys
-                  where owner_id = ${ownerId} and key = ${key} and created_at < ${expiredBefore}`;
+                  where owner_id = ${ownerId} and key = ${key}
+                    and (created_at < ${expiredBefore}
+                         or (status is null and created_at < ${abandonedBefore}))`;
         const inserted = await tx`
           insert into idempotency_keys (owner_id, key, request_hash, created_at)
           values (${ownerId}, ${key}, ${requestHash}, ${now})

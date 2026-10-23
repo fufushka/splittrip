@@ -9,11 +9,13 @@ export function createMemoryIdempotencyStore(): IdempotencyStore {
   const id = (ownerId: string, key: string): string => `${ownerId}\u0000${key}`;
 
   return {
-    reserve(ownerId, key, requestHash, now, expiredBefore) {
+    reserve(ownerId, key, requestHash, now, { expiredBefore, abandonedBefore }) {
       const existing = records.get(id(ownerId, key));
-      if (existing !== undefined && existing.createdAt >= expiredBefore) {
-        return Promise.resolve(existing);
-      }
+      const replaceable =
+        existing === undefined ||
+        existing.createdAt < expiredBefore ||
+        (existing.response === null && existing.createdAt < abandonedBefore);
+      if (!replaceable) return Promise.resolve(existing);
       records.set(id(ownerId, key), { requestHash, response: null, createdAt: now });
       return Promise.resolve(null);
     },

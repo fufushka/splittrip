@@ -6,7 +6,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import type { AuthProvider } from '../../auth/index.ts';
-import { setCurrentUser } from '../../context/index.ts';
+import { log, setCurrentUser } from '../../context/index.ts';
 import type { Idempotency } from '../../idempotency/index.ts';
 import {
   type ExpenseInput,
@@ -134,7 +134,13 @@ export function registerTripRoutes(app: FastifyInstance, deps: TripRouteDeps): v
       if (key !== undefined) {
         pending.delete(request);
         const body = typeof payload === 'string' ? payload : '';
-        await idempotency.finish(key, { status: reply.statusCode, body });
+        // Операцію вже виконано: збій збереження відповіді не підміняє її для клієнта
+        // (spec-fix-04, п. 2). Ключ лишиться in_progress і звільниться за IDEMPOTENCY_LEASE_MS.
+        await idempotency
+          .finish(key, { status: reply.statusCode, body })
+          .catch((error: unknown) => {
+            log.error({ err: error, status: reply.statusCode }, 'idempotency: response not stored');
+          });
       }
       return payload;
     });
