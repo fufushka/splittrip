@@ -28,6 +28,19 @@ export default defineConfig(
     },
   },
   {
+    // Один глобальний обробник помилок замість try/catch у роутах і сервісах (ADR-0021).
+    files: ['src/modules/http/**/*.ts', 'src/modules/trips/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TryStatement',
+          message: 'try заборонено в http і trips: помилки обробляє setErrorHandler (ADR-0021).',
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.js', '**/*.cjs'],
     extends: [tseslint.configs.disableTypeChecked],
   },

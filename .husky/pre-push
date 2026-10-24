@@ -1,1 +1,1 @@
-make pre-push
+npm run pre-push

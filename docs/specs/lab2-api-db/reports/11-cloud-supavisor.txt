@@ -1,0 +1,36 @@
+# Відтворити: node --env-file=<.env хмари> scripts/cloud-run.ts
+# Supabase: <ref>.supabase.co; БД: Supavisor <x>.pooler.supabase.com:6543 (transaction mode, prepare: false)
+# Час: 2026-10-23T23:43:46.188Z
+
+OK  GET    /ready                             200 (очік. 200) 104 мс — готовність: SELECT now() через Supavisor
+OK  POST   /auth/signup                       201 (очік. 201) 725 мс — реєстрація в Supabase Auth
+OK  POST   /auth/login                        200 (очік. 200) 171 мс — логін
+OK  POST   /trips                             201 (очік. 201) 286 мс — створити поїздку
+OK  POST   /trips/:id/participants            201 (очік. 201) 472 мс — додати учасника Аня
+OK  POST   /trips/:id/participants            201 (очік. 201) 462 мс — додати учасника Богдан
+OK  POST   /trips/:id/participants            201 (очік. 201) 462 мс — додати учасника Віра
+OK  POST   /trips/:id/participants            201 (очік. 201) 461 мс — додати й прибрати учасника
+OK  DELETE /trips/:id/participants/:id        204 (очік. 204) 466 мс — прибрати незгаданого учасника
+OK  POST   /trips/:id/expenses                201 (очік. 201) 535 мс — витрата порівну 100,00 на трьох
+OK  PUT    /trips/:id/expenses/:id            200 (очік. 200) 588 мс — змінити витрату (PUT)
+OK  POST   /trips/:id/expenses                201 (очік. 201) 526 мс — витрата точними частками
+OK  DELETE /trips/:id/expenses/:id            204 (очік. 204) 455 мс — видалити витрату
+OK  DELETE /trips/:id/participants/:id        409 (очік. 409) 392 мс — прибрати згаданого → 409
+OK  GET    /trips/:id/balances                200 (очік. 200) 393 мс — баланси
+OK  POST   /trips/:id/close                   409 (очік. 409) 396 мс — закрити з боргами → 409
+OK  GET    /trips/:id/settlements             200 (очік. 200) 393 мс — запропоновані перекази
+OK  POST   /trips/:id/transfers               201 (очік. 201) 465 мс — зафіксувати переказ
+OK  POST   /trips/:id/transfers               201 (очік. 201) 455 мс — зафіксувати переказ
+OK  POST   /trips/:id/transfers               201 (очік. 201) 462 мс — помилковий переказ
+OK  DELETE /trips/:id/transfers/:id           204 (очік. 204) 459 мс — видалити помилковий переказ
+OK  POST   /trips/:id/close                   200 (очік. 200) 456 мс — закрити поїздку
+OK  POST   /trips/:id/participants            409 (очік. 409) 391 мс — закрита не змінюється → 409
+OK  GET    /trips?limit=5                     200 (очік. 200) 193 мс — список поїздок
+OK  GET    /trips/:id                         200 (очік. 200) 389 мс — перегляд агрегату
+OK  DELETE /trips/:id                         204 (очік. 204) 586 мс — видалити поїздку
+OK  GET    /trips/:id                         404 (очік. 404) 198 мс — видалена → 404
+OK  POST   /auth/logout                       204 (очік. 204) 130 мс — вихід
+OK  POST   /auth/refresh                      401 (очік. 401) 95 мс — refresh після logout → 401
+OK  GET    <SUPABASE_URL>/rest/v1/trips      200, рядків: 0 — Data API закритий RLS
+
+# Результат: усі кроки OK

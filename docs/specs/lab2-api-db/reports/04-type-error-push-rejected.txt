@@ -1,0 +1,48 @@
+# Відтворити: npm run demo (сценарій «пуш із помилкою типів»)
+# Очікування: відмова; результат: OK
+# HEAD: 9d423a3266b728ab60bb3fa5db7181c30b439255
+
+$ git commit -m "feat(money): демо помилки типів"
+[feature/lab2-api-db a6a7ac3] feat(money): демо помилки типів
+ 1 file changed, 2 insertions(+)
+
+> splittrip@0.1.0 pre-commit
+> lint-staged && npm run hygiene
+
+⋯ Backing up original state…
+✔ Done backing up original state (8ff1c1d)!
+⋯ Running tasks for staged files…
+    *.{ts,js,cjs} — 1 file
+      ⋯ prettier --check
+      ⋯ eslint --max-warnings=0
+
+✔ prettier --check
+✔ eslint --max-warnings=0
+
+✔ Done running tasks for staged files!
+⋯ Staging changes from tasks…
+✔ Done staging changes from tasks!
+⋯ Cleaning up temporary files…
+✔ Done cleaning up temporary files!
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+
+> splittrip@0.1.0 commit-msg
+> node scripts/check-commit-msg.ts .git/COMMIT_EDITMSG
+[код виходу: 0]
+
+$ git push "C:\Users\dimau\AppData\Local\Temp\splittrip-demo-d94c6d\remote.git" HEAD:refs/heads/demo-types
+> splittrip@0.1.0 pre-push
+> npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api
+
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+src/modules/money/index.ts(46,14): error TS2322: Type 'string' is not assignable to type 'number'.
+husky - pre-push script failed (code 2)
+error: failed to push some refs to 'C:\Users\dimau\AppData\Local\Temp\splittrip-demo-d94c6d\remote.git'
+[код виходу: 1]

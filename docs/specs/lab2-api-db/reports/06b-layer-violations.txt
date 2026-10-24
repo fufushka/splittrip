@@ -1,0 +1,18 @@
+# Відтворити: npm run demo (сценарій «SQL у роутах, ALS і fastify у сервісі, jose у сховищі»)
+# Очікування: відмова; результат: OK
+# HEAD: 9d423a3266b728ab60bb3fa5db7181c30b439255
+
+$ npm run boundaries
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+  error pure-domain: src/modules/trips/service.ts → node_modules/fastify/fastify.js
+  error pure-domain: src/modules/trips/service.ts → async_hooks
+  error postgres-only-in-storage: src/modules/http/routes/trips.ts → node_modules/postgres/src/index.js
+  error jose-only-in-auth: src/modules/storage/index.ts → node_modules/jose/dist/webapi/index.js
+  error fastify-only-in-http: src/modules/trips/service.ts → node_modules/fastify/fastify.js
+  error async-hooks-only-in-context: src/modules/trips/service.ts → async_hooks
+
+x 6 dependency violations (6 errors, 0 warnings). 38 modules, 98 dependencies cruised.
+[код виходу: 6]
