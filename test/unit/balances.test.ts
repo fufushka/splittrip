@@ -1,5 +1,6 @@
 /**
- * Модульні тести `balances` (ADR-0011): тести-підсилення лаби 3 (spec, крит. 17) за
+ * Модульні тести `balances` (ADR-0011, ADR-0012): тести-підсилення лаби 3 (spec, крит. 17) і
+ * повне покриття (крит. 2, 3, 14; spec-fix-01) за
  * `docs/specs/lab3-testing/reports/mutation-analysis.md`, розд. 6.
  */
 import assert from 'node:assert/strict';
@@ -29,5 +30,33 @@ describe('balances: suggestTransfers, кілька кредиторів (ADR-001
       after.map((b, i) => b.amount + (balances[i]?.amount ?? 0)),
       [0, 0, 0, 0],
     );
+  });
+
+  // T2: мутанти #3 (прибрано `.sort(…)`), #4 (`||` → `&&`) і #5 (`|y| − |x|` → `+`) у
+  // компараторі `pick` (рядки 72, 74 за звітом «до»): з ними `pick` бере першого за порядком.
+  it('найбільший боржник платить найбільшому кредитору, а не першому в списку', () => {
+    const balances = [
+      { participantId: 'a', amount: money(10) },
+      { participantId: 'b', amount: money(20) },
+      { participantId: 'c', amount: money(-20) },
+      { participantId: 'd', amount: money(-10) },
+    ];
+    assert.deepEqual(suggestTransfers(balances), [
+      { fromId: 'c', toId: 'b', amount: money(20) },
+      { fromId: 'd', toId: 'a', amount: money(10) },
+    ]);
+  });
+});
+
+describe('balances: computeBalances (ADR-0012)', () => {
+  // T3: гілка `?? ZERO` у `shift` (рядок 42) — єдиний тест, що її покриває (spec-fix-01, п. 1);
+  // через API недосяжна: домен відхиляє невідомого платника з 422.
+  it('платник поза списком учасників не потрапляє в результат, частка учасника — так', () => {
+    const balances = computeBalances(
+      ['a'],
+      [{ payerId: 'x', amount: money(100), shares: [{ participantId: 'a', amount: money(100) }] }],
+      [],
+    );
+    assert.deepEqual(balances, [{ participantId: 'a', amount: money(-100) }]);
   });
 });

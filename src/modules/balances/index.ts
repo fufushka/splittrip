@@ -52,6 +52,9 @@ export function computeBalances(
   }
   return participantIds.map((participantId) => ({
     participantId,
+    // `?? ZERO` недосяжне: ключі `totals` — рівно `participantIds` (створено вище), а `shift`
+    // лише `set`-ить, тож `get` для `participantId` з того самого масиву не дає `undefined`.
+    /* node:coverage ignore next */
     amount: totals.get(participantId) ?? ZERO,
   }));
 }
@@ -61,8 +64,13 @@ export function computeBalances(
  * за рівних сум — раніший у списку (ADR-0011). Не більше n − 1 переказу.
  */
 export function suggestTransfers(balances: readonly Balance[]): SuggestedTransfer[] {
+  // Stryker disable next-line MethodExpression: еквівалентний — без filter нульові баланси потрапляють в open, але pick бере лише знак ±1, а order ненульових зберігає їхній відносний порядок
   const open = balances
-    .filter((b) => b.amount !== 0)
+    .filter(
+      (b) =>
+        // Stryker disable next-line ConditionalExpression: еквівалентний — filter, що пропускає все, дає те саме, що й без filter (Д1)
+        b.amount !== 0,
+    )
     .map((b, order): { id: string; amount: number; order: number } => ({
       id: b.participantId,
       amount: b.amount,
@@ -71,7 +79,12 @@ export function suggestTransfers(balances: readonly Balance[]): SuggestedTransfe
   const pick = (sign: 1 | -1) =>
     open
       .filter((b) => Math.sign(b.amount) === sign)
-      .sort((x, y) => Math.abs(y.amount) - Math.abs(x.amount) || x.order - y.order)[0];
+      .sort(
+        (x, y) =>
+          Math.abs(y.amount) - Math.abs(x.amount) ||
+          // Stryker disable next-line ArithmeticOperator: еквівалентний — вхід sort іде за зростанням order, а V8 TimSort викликає компаратор як (пізніший, ранній), тож за рівних сум x.order + y.order > 0, як і x.order − y.order
+          x.order - y.order,
+      )[0];
 
   const result: SuggestedTransfer[] = [];
   for (;;) {
