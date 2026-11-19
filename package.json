@@ -34,8 +34,8 @@
     "pre-commit": "lint-staged && npm run hygiene",
     "demo": "node scripts/demo-guards.ts",
     "mutation": "node scripts/mutation.ts",
-    "check": "npm run format:check && npm run lint && npm run hygiene && npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api",
-    "pre-push": "npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api"
+    "check": "npm run format:check && npm run lint && npm run hygiene && npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api && npm run coverage",
+    "pre-push": "npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api && npm run coverage"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
