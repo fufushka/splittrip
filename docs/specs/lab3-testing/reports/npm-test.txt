@@ -1,0 +1,472 @@
+# Відтворити: npm test -- --report (потрібен Docker)
+# HEAD: ca177ca4ca024e1516ce29eb1030e55513f5fa18
+# Код виходу: 0
+
+== [1/8] Docker ==
+$ docker info
+Client:
+ Version:    28.0.4
+ Context:    desktop-linux
+ Debug Mode: false
+ Plugins:
+  ai: Docker AI Agent - Ask Gordon (Docker Inc.)
+    Version:  v1.1.3
+    Path:     C:\Program Files\Docker\cli-plugins\docker-ai.exe
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.22.0-desktop.1
+    Path:     C:\Program Files\Docker\cli-plugins\docker-buildx.exe
+  cloud: Docker Cloud (Docker Inc.)
+    Version:  0.2.20
+    Path:     C:\Program Files\Docker\cli-plugins\docker-cloud.exe
+  compose: Docker Compose (Docker Inc.)
+    Version:  v2.34.0-desktop.1
+    Path:     C:\Program Files\Docker\cli-plugins\docker-compose.exe
+  debug: Get a shell into any image or container (Docker Inc.)
+    Version:  0.0.38
+    Path:     C:\Program Files\Docker\cli-plugins\docker-debug.exe
+  desktop: Docker Desktop commands (Beta) (Docker Inc.)
+    Version:  v0.1.6
+WARNING: No blkio throttle.read_bps_device support
+WARNING: No blkio throttle.write_bps_device support
+WARNING: No blkio throttle.read_iops_device support
+WARNING: No blkio throttle.write_iops_device support
+WARNING: DOCKER_INSECURE_NO_IPTABLES_RAW is set
+WARNING: daemon is not using the default seccomp profile
+    Path:     C:\Program Files\Docker\cli-plugins\docker-desktop.exe
+  dev: Docker Dev Environments (Docker Inc.)
+    Version:  v0.1.2
+    Path:     C:\Program Files\Docker\cli-plugins\docker-dev.exe
+  extension: Manages Docker extensions (Docker Inc.)
+    Version:  v0.2.27
+    Path:     C:\Program Files\Docker\cli-plugins\docker-extension.exe
+  init: Creates Docker-related starter files for your project (Docker Inc.)
+    Version:  v1.4.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-init.exe
+  sbom: View the packaged-based Software Bill Of Materials (SBOM) for an image (Anchore Inc.)
+    Version:  0.6.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-sbom.exe
+  scout: Docker Scout (Docker Inc.)
+    Version:  v1.17.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-scout.exe
+
+Server:
+ Containers: 7
+  Running: 7
+  Paused: 0
+  Stopped: 0
+ Images: 13
+ Server Version: 28.0.4
+ Storage Driver: overlayfs
+  driver-type: io.containerd.snapshotter.v1
+ Logging Driver: json-file
+ Cgroup Driver: cgroupfs
+ Cgroup Version: 1
+ Plugins:
+  Volume: local
+  Network: bridge host ipvlan macvlan null overlay
+  Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+ CDI spec directories:
+  /etc/cdi
+  /var/run/cdi
+ Swarm: inactive
+ Runtimes: nvidia runc io.containerd.runc.v2
+ Default Runtime: runc
+ Init Binary: docker-init
+ containerd version: 753481ec61c7c8955a23d6ff7bc8e4daed455734
+ runc version: v1.2.5-0-g59923ef
+ init version: de40ad0
+ Security Options:
+  seccomp
+   Profile: unconfined
+ Kernel Version: 5.15.167.4-microsoft-standard-WSL2
+ Operating System: Docker Desktop
+ OSType: linux
+ Architecture: x86_64
+ CPUs: 12
+ Total Memory: 7.679GiB
+ Name: docker-desktop
+ ID: 6a15c24c-f250-41c7-a7b8-eafe5e70c783
+ Docker Root Dir: /var/lib/docker
+ Debug Mode: false
+ HTTP Proxy: http.docker.internal:3128
+ HTTPS Proxy: http.docker.internal:3128
+ No Proxy: hubproxy.docker.internal
+ Labels:
+  com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+ Experimental: false
+ Insecure Registries:
+  hubproxy.docker.internal:5555
+  ::1/128
+  127.0.0.0/8
+ Live Restore Enabled: false
+
+== [2/8] Supabase ==
+$ npx supabase status -o env (вивід не показується: ключі)
+Supabase уже запущено
+== [3/8] база ==
+npm test: база run_462d1f05333b49deb2189936a5a8b0e5
+== [4/8] unit ==
+$ npm run test:unit
+
+> splittrip@0.1.0 test:unit
+> node --test --test-timeout=60000 --experimental-test-coverage --test-coverage-include=src/modules/balances/index.ts test/unit/*.test.ts
+
+▶ balances: suggestTransfers, кілька кредиторів (ADR-0011)
+  ✔ кожен кредитор отримує рівно свій баланс; після переказів усі баланси 0 (3.1555ms)
+  ✔ найбільший боржник платить найбільшому кредитору, а не першому в списку (1.3599ms)
+✔ balances: suggestTransfers, кілька кредиторів (ADR-0011) (6.0336ms)
+▶ balances: computeBalances (ADR-0012)
+  ✔ платник поза списком учасників не потрапляє в результат, частка учасника — так (0.2537ms)
+✔ balances: computeBalances (ADR-0012) (0.3902ms)
+▶ ids: UUIDv7
+  ✔ формат RFC 9562: версія 7, варіант 10 (7.1524ms)
+  ✔ монотонні в межах однієї мілісекунди й при відставанні годинника (69.7465ms)
+✔ ids: UUIDv7 (79.8432ms)
+▶ money: allocateEqually (ADR-0010)
+  ✔ 10000 на 3 → [3334, 3333, 3333] (1.4406ms)
+  ✔ Σ часток = сума для різних входів (I1) (4.6923ms)
+  ✔ дробові суми й нецілі частки відхиляються (0.8663ms)
+✔ money: allocateEqually (ADR-0010) (7.2803ms)
+▶ balances: computeBalances і suggestTransfers
+  ✔ Σ балансів = 0 (I2); переказ зменшує борг (0.5921ms)
+  ✔ жадібний розрахунок обнуляє всі баланси, не більше n − 1 переказу (ADR-0011) (0.4806ms)
+✔ balances: computeBalances і suggestTransfers (1.2516ms)
+▶ idempotency: стани ключа
+  ✔ дубль, поки перший запит обробляється → IdempotencyInProgressError (409) (5.6594ms)
+  ✔ після успіху повтор отримує збережену відповідь (2.3187ms)
+  ✔ 5xx звільняє ключ: повтор виконується знову (0.5765ms)
+  ✔ покинутий in_progress ключ перезаймається після lease, не раніше (0.7427ms)
+  ✔ завершений ключ lease не перезаймає: відповідь діє весь TTL (0.8518ms)
+✔ idempotency: стани ключа (13.1283ms)
+▶ auth: адаптер Supabase
+  ✔ signup без сесії (увімкнено «Confirm email») → явна помилка конфігурації, не 2xx (29.895ms)
+  ✔ signup: user_already_exists → EmailTakenError; інша 4xx → AuthRejectedError (6.9263ms)
+  ✔ 5xx і обрив з’єднання → AuthUnavailableError (503), а не 401 (7.0259ms)
+  ✔ 429 і не-JSON тіло → AuthUnavailableError, а не 401/400/500 (spec-fix-04, п. 5) (5.8081ms)
+  ✔ apikey передається в кожен запит; паролі не йдуть у query (3.3151ms)
+✔ auth: адаптер Supabase (60.7941ms)
+▶ trips/domain: balancesOf — порядок за position
+  ✔ учасники [B (2), A (1)] → баланси [A, B] (3.1552ms)
+✔ trips/domain: balancesOf — порядок за position (5.697ms)
+▶ trips/domain: removeParticipant — згаданого учасника не прибирають (I5)
+  ✔ лише отримувач переказу → ConflictError participant_in_use (2.5824ms)
+  ✔ лише платник витрати, без власної частки → ConflictError participant_in_use (0.7567ms)
+  ✔ учасник однієї з кількох часток → ConflictError participant_in_use (0.5105ms)
+✔ trips/domain: removeParticipant — згаданого учасника не прибирають (I5) (5.563ms)
+▶ trips/domain: removeExpense — лише одна витрата
+  ✔ з двох витрат прибрано першу, друга лишається без змін (3.73ms)
+✔ trips/domain: removeExpense — лише одна витрата (5.2442ms)
+▶ trips/domain: removeParticipant — рівно один учасник
+  ✔ незгаданого прибрано, решта учасників лишається без змін (3.2541ms)
+  ✔ неіснуючий у поїздці з учасниками → NotFoundError participant_not_found (0.8771ms)
+  ✔ єдиного учасника прибрано (0.32ms)
+✔ trips/domain: removeParticipant — рівно один учасник (6.1986ms)
+▶ trips/domain: removeTransfer — лише наявний і лише один переказ
+  ✔ неіснуючий у поїздці з переказами → NotFoundError transfer_not_found (3.6375ms)
+  ✔ з двох переказів прибрано перший, другий лишається без змін (0.9636ms)
+✔ trips/domain: removeTransfer — лише наявний і лише один переказ (6.5617ms)
+ℹ tests 30
+ℹ suites 12
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 506.9678
+ℹ start of coverage report
+ℹ ------------------------------------------------------------
+ℹ file        | line % | branch % | funcs % | uncovered lines
+ℹ ------------------------------------------------------------
+ℹ src         |        |          |         | 
+ℹ  modules    |        |          |         | 
+ℹ   balances  |        |          |         | 
+ℹ    index.ts | 100.00 |   100.00 |  100.00 | 
+ℹ ------------------------------------------------------------
+ℹ all files   | 100.00 |   100.00 |  100.00 | 
+ℹ ------------------------------------------------------------
+ℹ end of coverage report
+== [5/8] інтеграційні ==
+$ npm run test:cov
+
+> splittrip@0.1.0 test:cov
+> node -e "require('node:fs').mkdirSync('coverage',{recursive:true})" && node --test --test-timeout=120000 --experimental-test-coverage --test-coverage-include=src/**/*.ts --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/level-summary.ts --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info test/unit/*.test.ts test/api/*.test.ts
+
+(node:11220) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added to [TestsStream]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ auth: реєстрація й логін
+  ✔ signup → 201 з користувачем і токенами; email у нижньому регістрі (343.2565ms)
+  ✔ signup з зайнятим email → 409 email_taken (202.7596ms)
+  ✔ signup з некоректним email, коротким чи задовгим паролем → 400 (5.6985ms)
+  ✔ login → 200 і токен працює на /trips (262.6413ms)
+  ✔ невідомий email і хибний пароль — однаковий 401 (без перебору email) (225.3881ms)
+✔ auth: реєстрація й логін (1875.2031ms)
+▶ auth: refresh і logout
+  ✔ refresh → нова пара токенів, новий access-токен працює (226.8999ms)
+  ✔ невідомий refresh-токен → 401 (5.3564ms)
+  ✔ logout → 204; після нього refresh-токен не діє (207.6444ms)
+  ✔ logout без токена → 401 (0.8693ms)
+✔ auth: refresh і logout (441.0873ms)
+▶ auth: доступ до /trips
+  ✔ без токена, з підробленим чи не-Bearer → 401 з WWW-Authenticate (123.1312ms)
+  ✔ прострочений токен → 401 (117.6434ms)
+  ✔ токен з правильними claims, підписаний чужим ключем → 401 (113.9433ms)
+✔ auth: доступ до /trips (354.9944ms)
+▶ доступ: чужа поїздка → 404 на кожен /trips/:id*
+  ✔ жоден ендпоінт не видає й не змінює чужу поїздку (181.1428ms)
+  ✔ GET /trips не показує чужих поїздок (53.0979ms)
+✔ доступ: чужа поїздка → 404 на кожен /trips/:id* (1546.6823ms)
+▶ помилки й requestId
+  ✔ problem+json з requestId = X-Request-Id відповіді (6.5865ms)
+  ✔ X-Request-Id клієнта використовується; небезпечний — замінюється UUIDv7 (1.8812ms)
+  ✔ невідомий маршрут → 404 route_not_found; зламаний JSON → 400 (3.2856ms)
+  ✔ /health 200, /ready 200 на статиці, /version — без JWT (3.6409ms)
+✔ помилки й requestId (15.8699ms)
+▶ ідемпотентність POST /trips* (ADR-0019)
+  ✔ повтор із тим самим ключем → та сама відповідь і одна поїздка (35.808ms)
+  ✔ без ключа POST виконується; ключ довший за 255 символів → 400 (spec-fix-01, п. 4) (9.0764ms)
+  ✔ той самий ключ з іншим тілом → 422 idempotency_key_reused (25.8198ms)
+  ✔ ключі ізольовані між користувачами (34.4881ms)
+  ✔ 4xx теж відтворюється: повтор не виконує операцію вдруге (46.975ms)
+✔ ідемпотентність POST /trips* (ADR-0019) (152.705ms)
+▶ логи (крит. 5, 6)
+  ✔ рядки роута, сервісу й сховища одного запиту мають той самий processId і userId (9.9652ms)
+  ✔ паролі й токени не потрапляють у логи (331.6873ms)
+✔ логи (крит. 5, 6) (342.0053ms)
+▶ паралельні зміни (крит. 7)
+  ✔ close і POST expenses одночасно: рівно одна операція успішна, стан узгоджений (437.6231ms)
+✔ паралельні зміни (крит. 7) (437.7805ms)
+▶ Idempotency-Key: збої сховища ключів
+  ✔ збій збереження відповіді після успіху → клієнт отримує оригінальний 201 (1065.8784ms)
+  ✔ паралельний дубль (ключ in_progress) → 409 idempotency_in_progress (107.1667ms)
+✔ Idempotency-Key: збої сховища ключів (1174.452ms)
+▶ N+1 (крит. 10)
+  ✔ GET /trips/:id: та сама кількість запитів для 1 і 20 витрат (352.6709ms)
+  ✔ баланси й розрахунок — теж без залежності від кількості витрат (266.8812ms)
+✔ N+1 (крит. 10) (1796.6613ms)
+▶ ретраї тимчасових помилок (крит. 8)
+  ✔ 2 помилки 40001 поспіль → третя спроба успішна, 201 (382.3194ms)
+  ✔ 3 помилки поспіль → 503 з Retry-After, нічого не збережено (366.8235ms)
+✔ ретраї тимчасових помилок (крит. 8) (780.9343ms)
+▶ збій джерела під час роботи (крит. 9)
+  ✔ БД зникла → 503 + Retry-After, /ready 503, /health 200; повернулась → 200 (606.5396ms)
+✔ збій джерела під час роботи (крит. 9) (606.711ms)
+▶ /ready не висить на «завислій» БД (spec-fix-04, п. 6)
+  ✔ з’єднання живе, відповіді немає → /ready 503 за ≤ 3 с (7091.0259ms)
+✔ /ready не висить на «завислій» БД (spec-fix-04, п. 6) (7091.407ms)
+▶ fail-fast на старті (крит. 9)
+  ✔ composeApp з недоступною БД відхиляється SourceUnavailableError (7.7403ms)
+  ✔ процес з невірним DATABASE_URL завершується з кодом 1 за ≤ 10 с (444.0075ms)
+✔ fail-fast на старті (крит. 9) (452.0125ms)
+▶ сховище напряму: повтори й покинуті ключі (spec-fix-04, п. 3–4)
+  ✔ повторне create тієї самої поїздки (COMMIT з невідомим результатом) — без помилки (37.4068ms)
+  ✔ in_progress ключ перезаймається лише після lease (таблиця idempotency_keys) (54.244ms)
+✔ сховище напряму: повтори й покинуті ключі (spec-fix-04, п. 3–4) (91.8829ms)
+▶ обмеження БД — друга лінія інваріантів
+  ✔ усі таблиці схеми public під RLS — закриті від Data API (spec-fix-03, п. 1) (3.4207ms)
+  ✔ частка учасника з іншої поїздки відхиляється FK (I3), навіть повз домен (58.5392ms)
+  ✔ учасника, згаданого у витраті, не видалити й напряму (I5) (31.4016ms)
+✔ обмеження БД — друга лінія інваріантів (93.6176ms)
+▶ поїздки: створення, список, перегляд, видалення
+  ✔ POST /trips → 201 відкрита поїздка без учасників (41.4864ms)
+  ✔ POST /trips з порожньою назвою, невідомою валютою чи зайвим полем → 400 (14.1489ms)
+  ✔ GET /trips — лише свої, новіші першими, з курсором (159.6664ms)
+  ✔ GET /trips з limit поза 1–100 чи некоректним курсором → 400 (7.3338ms)
+  ✔ GET /trips/:id → агрегат з учасниками, витратами й переказами (74.012ms)
+  ✔ GET /trips/:id неіснуючої → 404; некоректний id → 400 (6.6603ms)
+  ✔ DELETE /trips/:id → 204 для відкритої й закритої; потім 404 (60.6334ms)
+  ✔ DELETE /trips/:id з учасниками, витратами й переказами → 204, каскадно (контракт) (58.7817ms)
+✔ поїздки: створення, список, перегляд, видалення (1604.655ms)
+▶ учасники
+  ✔ додати → 201 з position за порядком; прибрати незгаданого → 204 (35.584ms)
+  ✔ порожнє ім’я → 400; неіснуючий учасник → 404 (13.6744ms)
+  ✔ прибрати згаданого у витраті чи переказі → 409 participant_in_use (I5) (67.9906ms)
+✔ учасники (117.4922ms)
+▶ витрати
+  ✔ поділ порівну: залишкові копійки — першим за порядком додавання (ADR-0010) (50.065ms)
+  ✔ точні частки; платник може не входити в поділ (33.5041ms)
+  ✔ частки exact — за порядком додавання учасників, як у БД (spec-fix-02, п. 2) (37.3707ms)
+  ✔ порівну, менше копійки на учасника → 422 share_too_small (spec-fix-04, п. 1) (47.7437ms)
+  ✔ Σ часток ≠ сумі → 422 shares_sum_mismatch (I1) (20.1208ms)
+  ✔ чужий учасник (платник чи частка) → 422 unknown_participant (I3) (40.7252ms)
+  ✔ дубль учасника в поділі → 422 duplicate_participant (24.9817ms)
+  ✔ некоректна форма: сума 0, дробова, рядком, булева; невідомий mode → 400 (29.512ms)
+  ✔ PUT → 200, частки перераховано, інша витрата без змін; неіснуюча → 404 (84.7939ms)
+  ✔ DELETE → 204; повторно → 404 (39.7554ms)
+✔ витрати (409.2843ms)
+▶ перекази, баланси, розрахунок, закриття
+  ✔ сценарій повністю: витрата → баланси → пропозиції → перекази → закриття (103.5093ms)
+  ✔ переказ сам собі → 422; чужому → 422; неіснуючий → 404 при видаленні (35.3626ms)
+  ✔ помилковий переказ видаляється → 204; переплата лише змінює баланс (46.6405ms)
+  ✔ закрита поїздка не змінюється: кожна зміна → 409 trip_closed (I4) (115.2814ms)
+✔ перекази, баланси, розрахунок, закриття (301.1655ms)
+▶ balances: suggestTransfers, кілька кредиторів (ADR-0011)
+  ✔ кожен кредитор отримує рівно свій баланс; після переказів усі баланси 0 (5.2434ms)
+  ✔ найбільший боржник платить найбільшому кредитору, а не першому в списку (0.3202ms)
+✔ balances: suggestTransfers, кілька кредиторів (ADR-0011) (7.2319ms)
+▶ balances: computeBalances (ADR-0012)
+  ✔ платник поза списком учасників не потрапляє в результат, частка учасника — так (0.3041ms)
+✔ balances: computeBalances (ADR-0012) (0.4777ms)
+▶ ids: UUIDv7
+  ✔ формат RFC 9562: версія 7, варіант 10 (8.3367ms)
+  ✔ монотонні в межах однієї мілісекунди й при відставанні годинника (61.6138ms)
+✔ ids: UUIDv7 (72.7655ms)
+▶ money: allocateEqually (ADR-0010)
+  ✔ 10000 на 3 → [3334, 3333, 3333] (0.5675ms)
+  ✔ Σ часток = сума для різних входів (I1) (5.5409ms)
+  ✔ дробові суми й нецілі частки відхиляються (1.4602ms)
+✔ money: allocateEqually (ADR-0010) (8.0869ms)
+▶ balances: computeBalances і suggestTransfers
+  ✔ Σ балансів = 0 (I2); переказ зменшує борг (2.6314ms)
+  ✔ жадібний розрахунок обнуляє всі баланси, не більше n − 1 переказу (ADR-0011) (1.1086ms)
+✔ balances: computeBalances і suggestTransfers (4.0443ms)
+▶ idempotency: стани ключа
+  ✔ дубль, поки перший запит обробляється → IdempotencyInProgressError (409) (7.1179ms)
+  ✔ після успіху повтор отримує збережену відповідь (1.0483ms)
+  ✔ 5xx звільняє ключ: повтор виконується знову (2.5473ms)
+  ✔ покинутий in_progress ключ перезаймається після lease, не раніше (0.7931ms)
+  ✔ завершений ключ lease не перезаймає: відповідь діє весь TTL (0.5077ms)
+✔ idempotency: стани ключа (14.0163ms)
+▶ auth: адаптер Supabase
+  ✔ signup без сесії (увімкнено «Confirm email») → явна помилка конфігурації, не 2xx (45.0583ms)
+  ✔ signup: user_already_exists → EmailTakenError; інша 4xx → AuthRejectedError (10.3208ms)
+  ✔ 5xx і обрив з’єднання → AuthUnavailableError (503), а не 401 (8.9063ms)
+  ✔ 429 і не-JSON тіло → AuthUnavailableError, а не 401/400/500 (spec-fix-04, п. 5) (7.6986ms)
+  ✔ apikey передається в кожен запит; паролі не йдуть у query (3.8266ms)
+✔ auth: адаптер Supabase (86.8254ms)
+▶ trips/domain: balancesOf — порядок за position
+  ✔ учасники [B (2), A (1)] → баланси [A, B] (2.3669ms)
+✔ trips/domain: balancesOf — порядок за position (4.9225ms)
+▶ trips/domain: removeParticipant — згаданого учасника не прибирають (I5)
+  ✔ лише отримувач переказу → ConflictError participant_in_use (2.9471ms)
+  ✔ лише платник витрати, без власної частки → ConflictError participant_in_use (0.8069ms)
+  ✔ учасник однієї з кількох часток → ConflictError participant_in_use (0.5224ms)
+✔ trips/domain: removeParticipant — згаданого учасника не прибирають (I5) (7.4904ms)
+▶ trips/domain: removeExpense — лише одна витрата
+  ✔ з двох витрат прибрано першу, друга лишається без змін (3.2305ms)
+✔ trips/domain: removeExpense — лише одна витрата (4.8408ms)
+▶ trips/domain: removeParticipant — рівно один учасник
+  ✔ незгаданого прибрано, решта учасників лишається без змін (4.2575ms)
+  ✔ неіснуючий у поїздці з учасниками → NotFoundError participant_not_found (0.973ms)
+  ✔ єдиного учасника прибрано (0.2465ms)
+✔ trips/domain: removeParticipant — рівно один учасник (7.7347ms)
+▶ trips/domain: removeTransfer — лише наявний і лише один переказ
+  ✔ неіснуючий у поїздці з переказами → NotFoundError transfer_not_found (2.1413ms)
+  ✔ з двох переказів прибрано перший, другий лишається без змін (0.699ms)
+✔ trips/domain: removeTransfer — лише наявний і лише один переказ (3.9792ms)
+ℹ tests 96
+ℹ suites 32
+ℹ pass 96
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12136.8975
+ℹ start of coverage report
+ℹ --------------------------------------------------------------------------------
+ℹ file               | line % | branch % | funcs % | uncovered lines
+ℹ --------------------------------------------------------------------------------
+ℹ src                |        |          |         | 
+ℹ  compose.ts        |  89.58 |    60.00 |   83.33 | 39-40 50-56 73
+ℹ  main.ts           |  73.91 |    25.00 |    0.00 | 12-17
+ℹ  modules           |        |          |         | 
+ℹ   auth             |        |          |         | 
+ℹ    index.ts        | 100.00 |   100.00 |  100.00 | 
+ℹ    memory.ts       |  86.89 |    81.82 |   66.67 | 78-79 98-102 106-110 114-117
+ℹ    model.ts        | 100.00 |   100.00 |  100.00 | 
+ℹ    supabase.ts     |  98.05 |    86.96 |   93.33 | 72 146-147
+ℹ   balances         |        |          |         | 
+ℹ    index.ts        | 100.00 |   100.00 |  100.00 | 
+ℹ   context          |        |          |         | 
+ℹ    index.ts        |  97.56 |    82.35 |   75.00 | 33-34
+ℹ   http             |        |          |         | 
+ℹ    index.ts        | 100.00 |    93.33 |  100.00 | 
+ℹ    problems.ts     |  98.95 |    84.38 |  100.00 | 69
+ℹ    routes          |        |          |         | 
+ℹ     auth.ts        | 100.00 |   100.00 |  100.00 | 
+ℹ     trips.ts       | 100.00 |   100.00 |  100.00 | 
+ℹ    schemas.ts      | 100.00 |   100.00 |  100.00 | 
+ℹ   idempotency      |        |          |         | 
+ℹ    index.ts        | 100.00 |    95.24 |  100.00 | 
+ℹ   ids              |        |          |         | 
+ℹ    index.ts        | 100.00 |    80.00 |  100.00 | 
+ℹ   money            |        |          |         | 
+ℹ    index.ts        | 100.00 |   100.00 |  100.00 | 
+ℹ   storage          |        |          |         | 
+ℹ    index.ts        | 100.00 |   100.00 |   75.00 | 
+ℹ    memory          |        |          |         | 
+ℹ     idempotency.ts | 100.00 |   100.00 |  100.00 | 
+ℹ     trips.ts       |  58.18 |   100.00 |   28.57 | 9-12 25-26 30-37 41-46 50-52
+ℹ    migrate.ts      |  37.29 |    50.00 |    0.00 | 20-23 27-59
+ℹ    postgres        |        |          |         | 
+ℹ     client.ts      | 100.00 |    93.75 |   92.31 | 
+ℹ     idempotency.ts |  94.92 |    93.33 |   83.33 | 54-56
+ℹ     trips.ts       | 100.00 |    95.38 |  100.00 | 
+ℹ   system           |        |          |         | 
+ℹ    index.ts        |  96.49 |    80.00 |   87.50 | 30-31
+ℹ   trips            |        |          |         | 
+ℹ    domain.ts       | 100.00 |    95.59 |  100.00 | 
+ℹ    errors.ts       | 100.00 |   100.00 |  100.00 | 
+ℹ    index.ts        | 100.00 |   100.00 |  100.00 | 
+ℹ    service.ts      | 100.00 |    97.73 |  100.00 | 
+ℹ --------------------------------------------------------------------------------
+ℹ all files          |  96.04 |    92.09 |   91.84 | 
+ℹ --------------------------------------------------------------------------------
+ℹ end of coverage report
+
+Підсумок за рівнями:
+  unit         · тестів 30 · пройшло 30 · впало 0 · пропущено 0
+  інтеграційні · тестів 66 · пройшло 66 · впало 0 · пропущено 0
+== [6/8] застосунок ==
+$ npm run build
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+$ node dist/main.js (HOST=127.0.0.1 PORT=58097, вивід → coverage/e2e-app.log)
+застосунок готовий: http://127.0.0.1:58097 (GET /ready 200)
+== [7/8] E2E ==
+$ node --test --test-timeout=60000 test/e2e/*.test.ts
+▶ E2E: доступ
+  ✔ користувач Б: чужа поїздка → 404 на GET і на додавання учасника (34.2535ms)
+  ✔ користувач А: logout 204 → refresh старим refresh-токеном 401 (77.9835ms)
+✔ E2E: доступ (475.8806ms)
+▶ E2E: ідемпотентність
+  ✔ два POST /expenses з одним Idempotency-Key → той самий id і одна витрата (440.8075ms)
+✔ E2E: ідемпотентність (442.2796ms)
+▶ E2E: повний шлях поїздки
+  ✔ signup → login → поїздка → учасники → витрати → перекази → баланси 0 → закриття (482.9544ms)
+✔ E2E: повний шлях поїздки (483.8074ms)
+▶ E2E: версія
+  ✔ GET /version → 200, version = git rev-parse HEAD (93.7433ms)
+✔ E2E: версія (95.0443ms)
+ℹ tests 5
+ℹ suites 4
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 657.3512
+== [8/8] пороги ==
+$ node scripts/check-coverage.ts coverage/lcov.info
+C13 coverage: гілки на файл за coverage/lcov.info
+  src/modules/money/index.ts       · гілки 100.00% (13/13) · поріг 90% · OK · довідково: рядки 100.00% (44/44)
+  src/modules/balances/index.ts    · гілки 100.00% (24/24) · поріг 100% · OK · довідково: рядки 100.00% (100/100)
+  src/modules/trips/domain.ts      · гілки 95.59% (65/68) · поріг 90% · OK · довідково: рядки 100.00% (180/180)
+  src/modules/trips/service.ts     · гілки 97.73% (43/44) · поріг 90% · OK · довідково: рядки 100.00% (149/149)
+  src/modules/idempotency/index.ts · гілки 95.24% (20/21) · поріг 90% · OK · довідково: рядки 100.00% (112/112)
+C13 coverage: усі пороги виконано
+== прибирання ==
+застосунок зупинено
+npm test: базу run_462d1f05333b49deb2189936a5a8b0e5 видалено
+== підсумок ==
+етап             результат  тривалість
+1. Docker        OK         1,0 с
+2. Supabase      OK         3,8 с
+3. база          OK         3,2 с
+4. unit          OK         1,2 с
+5. інтеграційні  OK         13,8 с
+6. застосунок    OK         3,6 с
+7. E2E           OK         0,7 с
+8. пороги        OK         0,1 с
+прибирання       OK         0,1 с
