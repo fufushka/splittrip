@@ -30,11 +30,15 @@
     "prepare": "husky",
     "pre-commit": "lint-staged && npm run hygiene",
     "demo": "node scripts/demo-guards.ts",
+    "mutation": "node scripts/mutation.ts",
     "check": "npm run format:check && npm run lint && npm run hygiene && npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api",
     "pre-push": "npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/tap-runner": "^10.1.1",
+    "@stryker-mutator/typescript-checker": "^10.1.1",
     "@types/node": "^24.19.0",
     "dependency-cruiser": "^18.4.0",
     "eslint": "^10.11.0",
