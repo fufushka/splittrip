@@ -95,6 +95,9 @@ Hook-и підключаються під час `npm ci` (скрипт `prepare
 | `dependency-cruiser` | Автоматичні межі модулів — перевірка C6 ([ADR-0006](docs/adr/0006-dependency-cruiser-boundaries.md)) |
 | `husky` | Підключає git-hook-и під час `npm ci` ([ADR-0007](docs/adr/0007-husky-lint-staged-hooks.md)) |
 | `lint-staged` | Перевіряє в pre-commit лише додані до коміту файли |
+| `@stryker-mutator/core` | Мутаційне тестування — перевірка C15, `npm run mutation` ([ADR-0022](docs/adr/0022-stryker-tap-runner.md)) |
+| `@stryker-mutator/tap-runner` | Запускає тести `node:test` під Stryker через TAP-вивід, з покриттям на тест-файл |
+| `@stryker-mutator/typescript-checker` | Відкидає мутанти з помилками типів (`CompileError`), щоб вони не рахувалися вижилими |
 
 ## Структура
 

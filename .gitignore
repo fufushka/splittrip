@@ -3,6 +3,8 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+# Пісочниця Stryker (ADR-0022)
+.stryker-tmp/
 
 # Логи
 *.log
