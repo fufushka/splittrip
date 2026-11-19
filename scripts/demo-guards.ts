@@ -1,14 +1,15 @@
 /**
- * Відтворювана демонстрація конвеєра (spec.md, крит. 5, 7, 10): у тимчасовому клоні HEAD
- * запускає `make install` + `make check`, робить брудний коміт, коміт із поганим повідомленням,
+ * Відтворювана демонстрація конвеєра (лаба 1, крит. 5, 7, 10; лаба 2, крит. 3, 4; C11): у тимчасовому клоні HEAD
+ * запускає `npm ci` + `npm run check`, робить брудний коміт, коміт із поганим повідомленням,
  * пуші зі зламаною збіркою та smoke і порушення меж модулів. Реальний вивід кожного
- * сценарію пише в docs/specs/lab1-foundation/reports/. Робочу копію не змінює.
+ * сценарію пише в docs/specs/lab2-api-db/reports/. Робочу копію не змінює.
  */
 import { spawnSync } from 'node:child_process';
 import {
   appendFileSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -16,7 +17,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const REPORTS = join(process.cwd(), 'docs/specs/lab1-foundation/reports');
+const REPORTS = join(process.cwd(), 'docs/specs/lab2-api-db/reports');
 const ENV = { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' };
 
 interface Result {
@@ -36,8 +37,12 @@ function must(command: string, cwd: string): void {
     throw new Error(`«${command}» завершилась з кодом ${String(res.code)}\n${res.output}`);
 }
 
+/** Підміна, що нічого не змінила, — помилка сценарію, а не «успіх» (код міг змінитися). */
 function edit(file: string, change: (text: string) => string): void {
-  writeFileSync(file, change(readFileSync(file, 'utf8')));
+  const before = readFileSync(file, 'utf8');
+  const after = change(before);
+  if (after === before) throw new Error(`Сценарій не застосовано: ${file} не змінився`);
+  writeFileSync(file, after);
 }
 
 function report(
@@ -49,7 +54,7 @@ function report(
   const failed = results.some((r) => r.code !== 0);
   const verdict = expectFail === failed ? 'OK' : 'НЕОЧІКУВАНО';
   const body = [
-    `# Відтворити: make demo (сценарій «${title}»)`,
+    `# Відтворити: npm run demo (сценарій «${title}»)`,
     `# Очікування: ${expectFail ? 'відмова' : 'успіх'}; результат: ${verdict}`,
     `# HEAD: ${head}`,
     '',
@@ -64,9 +69,12 @@ const head = run('git rev-parse HEAD', process.cwd()).output;
 const root = mkdtempSync(join(tmpdir(), 'splittrip-demo-'));
 const repo = join(root, 'repo');
 const remote = join(root, 'remote.git');
-// Старі звіти прибираємо, щоб у reports/ лишався вивід лише цього запуску.
-rmSync(REPORTS, { recursive: true, force: true });
+// Прибираємо лише власні старі звіти (01–08): у reports/ лаби 2 лежать і звіти інших
+// команд (report:db, cloud-run), яких demo не відтворює.
 mkdirSync(REPORTS, { recursive: true });
+for (const name of readdirSync(REPORTS)) {
+  if (/^0[1-8][a-z]?-.*\.txt$/.test(name)) rmSync(join(REPORTS, name));
+}
 
 try {
   console.log(`Клон HEAD ${head} у ${repo}`);
@@ -79,10 +87,10 @@ try {
   const file = (path: string): string => join(repo, path);
 
   // 1. Чистий клон: одна команда запускає всі перевірки (крит. 5, 6).
-  report('01-clean-clone-check', 'чистий клон: make install && make check', false, [
-    run('make install', repo),
+  report('01-clean-clone-check', 'чистий клон: npm ci && npm run check', false, [
+    run('npm ci', repo),
     run('git config core.hooksPath', repo),
-    run('make check', repo),
+    run('npm run check', repo),
   ]);
 
   // 2. Брудний коміт: порушення формату й лінту (крит. 7, C1, C2).
@@ -136,16 +144,19 @@ try {
   ]);
 
   // 4b. Пуш зі зламаною збіркою: типи й межі цілі, але src імпортує файл поза rootDir,
-  // тож падає саме `make build` (крит. 7, C7).
+  // тож падає саме `npm run build` (крит. 7, C7).
   reset();
   writeFileSync(file('scripts/outside.ts'), 'export const outside = 1;\n');
   edit(file('src/main.ts'), (t) =>
     t
       .replace(
-        "import { buildServer } from './modules/http/index.ts';",
-        "import { outside } from '../scripts/outside.ts';\nimport { buildServer } from './modules/http/index.ts';",
+        "import { composeApp } from './compose.ts';",
+        "import { outside } from '../scripts/outside.ts';\nimport { composeApp } from './compose.ts';",
       )
-      .replace('const app =', 'void outside;\n\nconst app ='),
+      .replace(
+        '  const app = await composeApp();',
+        '  void outside;\n  const app = await composeApp();',
+      ),
   );
   must('git add scripts/outside.ts src/main.ts', repo);
   const brokenBuild = run('git commit -m "feat: демо зламаної збірки"', repo);
@@ -185,8 +196,57 @@ try {
     '06-boundaries-violations',
     'обхід index.ts, напрям, цикл, модуль поза архітектурою',
     true,
-    [run('make boundaries', repo)],
+    [run('npm run boundaries', repo)],
   );
+
+  // 6b. Межі шарів лаби 2 (крит. 3): SQL-драйвер у роутах, AsyncLocalStorage і fastify у
+  // сервісі, jose у сховищі — кожне має валити C6.
+  reset();
+  appendFileSync(
+    file('src/modules/http/routes/trips.ts'),
+    "import postgres from 'postgres';\nexport const leakedSql = postgres;\n",
+  );
+  appendFileSync(
+    file('src/modules/trips/service.ts'),
+    "import { AsyncLocalStorage } from 'node:async_hooks';\n" +
+      "import Fastify from 'fastify';\n" +
+      'export const leaked = [AsyncLocalStorage, Fastify];\n',
+  );
+  appendFileSync(
+    file('src/modules/storage/index.ts'),
+    "import { decodeJwt } from 'jose';\nexport const leakedJwt = decodeJwt;\n",
+  );
+  report('06b-layer-violations', 'SQL у роутах, ALS і fastify у сервісі, jose у сховищі', true, [
+    run('npm run boundaries', repo),
+  ]);
+
+  // 7. try/catch у сервісі замість одного глобального обробника (крит. 4, C2).
+  reset();
+  edit(file('src/modules/trips/service.ts'), (t) =>
+    t.replace(
+      'const get = async (tripId: string): Promise<Trip> => owned(await repo.findById(tripId), tripId);',
+      'const get = async (tripId: string): Promise<Trip> => {\n' +
+        '    try {\n      return owned(await repo.findById(tripId), tripId);\n' +
+        "    } catch {\n      throw new NotFoundError('trip_not_found', tripId);\n    }\n  };",
+    ),
+  );
+  must('git add src/modules/trips/service.ts', repo);
+  report('07-try-in-service-commit-rejected', 'try/catch у сервісі trips', true, [
+    run('git commit -m "feat(trips): демо try у сервісі"', repo),
+  ]);
+
+  // 8. Пуш зі зламаним сценарієм API: прибрано перевірку власника — типи, лінт, межі й smoke
+  // цілі, падають лише API-тести (C11).
+  reset();
+  edit(file('src/modules/trips/service.ts'), (t) =>
+    t.replace('if (trip?.ownerId !== currentUser()) {', 'if (trip === null) {'),
+  );
+  must('git add src/modules/trips/service.ts', repo);
+  const brokenApi = run('git commit -m "feat(trips): демо без перевірки власника"', repo);
+  report('08-broken-api-push-rejected', 'пуш без перевірки власника поїздки', true, [
+    brokenApi,
+    run(`git push "${remote}" HEAD:refs/heads/demo-api`, repo),
+  ]);
 } finally {
   rmSync(root, { recursive: true, force: true, maxRetries: 3 });
 }

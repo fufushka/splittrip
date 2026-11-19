@@ -17,7 +17,8 @@ function promptFiles(): string[] {
     .filter((entry) => entry.isDirectory())
     .flatMap((dir) =>
       readdirSync(join(AI_DIR, dir.name))
-        .filter((name) => name.endsWith('.md'))
+        // NNNa-ai-*.md — питання ШІ, не промпти автора (ai-workflow 0.4).
+        .filter((name) => name.endsWith('.md') && !/^\d{3}a-ai-/.test(name))
         .map((name) => `${AI_DIR}/${dir.name}/${name}`),
     )
     .sort();
@@ -26,7 +27,7 @@ function promptFiles(): string[] {
 const lines = [
   `# Слід ШІ (HEAD ${git(['rev-parse', '--short', 'HEAD']).trim()})`,
   '',
-  'Відтворити: `make ai-trace`. Коміти без трейлера `AI-Prompt` автор зробив сам.',
+  'Відтворити: `npm run ai-trace`. Коміти без трейлера `AI-Prompt` автор зробив сам.',
   '',
 ];
 for (const prompt of promptFiles()) {

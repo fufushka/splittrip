@@ -11,6 +11,12 @@ coverage/
 .env
 .env.*
 !.env.example
+# Приватний ключ підпису JWT локального Supabase (ADR-0017)
+supabase/signing_keys.json
+
+# Локальний стан Supabase CLI (repository.md 0.2)
+supabase/.branches/
+supabase/.temp/
 
 # IDE та ОС
 .idea/

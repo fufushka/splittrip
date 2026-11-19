@@ -1,5 +1,5 @@
 ---
-status: прийнято
+status: замінено ADR-0014
 date: 2026-09-29
 decision-makers: Dima Pustolyakov
 ---

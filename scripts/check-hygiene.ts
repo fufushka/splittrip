@@ -7,7 +7,6 @@ import { basename, extname } from 'node:path';
 
 /** Дозволені файли без розширення (standarts/repository.md). */
 const ALLOWED_EXTENSIONLESS = new Set([
-  'Makefile',
   'LICENSE',
   '.gitignore',
   '.gitattributes',

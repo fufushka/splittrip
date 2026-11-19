@@ -1,0 +1,217 @@
+# Відтворити: npm run demo (сценарій «чистий клон: npm ci && npm run check»)
+# Очікування: успіх; результат: OK
+# HEAD: 9d423a3266b728ab60bb3fa5db7181c30b439255
+
+$ npm ci
+> splittrip@0.1.0 prepare
+> husky
+
+
+added 199 packages, and audited 200 packages in 12s
+
+69 packages are looking for funding
+  run `npm fund` for details
+
+1 moderate severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+[код виходу: 0]
+
+$ git config core.hooksPath
+.husky/_
+[код виходу: 0]
+
+$ npm run check
+> splittrip@0.1.0 check
+> npm run format:check && npm run lint && npm run hygiene && npm run typecheck && npm run boundaries && npm run smoke && npm run test:unit && npm run test:api
+
+
+> splittrip@0.1.0 format:check
+> prettier --check "**/*.{ts,js,cjs,json}"
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> splittrip@0.1.0 lint
+> eslint --max-warnings=0 .
+
+
+> splittrip@0.1.0 hygiene
+> node scripts/check-hygiene.ts
+
+C3 hygiene: репозиторій чистий
+
+> splittrip@0.1.0 typecheck
+> tsc --noEmit
+
+
+> splittrip@0.1.0 boundaries
+> depcruise src --config .dependency-cruiser.cjs
+
+
+✔ no dependency violations found (38 modules, 94 dependencies cruised)
+
+
+> splittrip@0.1.0 smoke
+> npm run build && node --test test/smoke/*.test.ts
+
+
+> splittrip@0.1.0 build
+> tsc -p tsconfig.build.json
+
+▶ smoke: зібраний застосунок
+  ✔ зібраний вхід dist/main.js існує (2.0902ms)
+  ✔ стартує й відповідає на /health (542.4455ms)
+  ✔ /version повертає sha поточного коміту (500.5487ms)
+  ✔ /version повертає APP_VERSION, якщо її задано (458.2318ms)
+  ✔ /version повертає unknown без git, а застосунок усе одно стартує (462.4719ms)
+✔ smoke: зібраний застосунок (1968.4291ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2165.4845
+
+> splittrip@0.1.0 test:unit
+> node --test --test-timeout=60000 test/unit/*.test.ts
+
+▶ ids: UUIDv7
+  ✔ формат RFC 9562: версія 7, варіант 10 (3.9824ms)
+  ✔ монотонні в межах однієї мілісекунди й при відставанні годинника (30.9372ms)
+✔ ids: UUIDv7 (35.7083ms)
+▶ money: allocateEqually (ADR-0010)
+  ✔ 10000 на 3 → [3334, 3333, 3333] (0.3038ms)
+  ✔ Σ часток = сума для різних входів (I1) (2.0849ms)
+  ✔ дробові суми й нецілі частки відхиляються (0.6428ms)
+✔ money: allocateEqually (ADR-0010) (3.2607ms)
+▶ balances: computeBalances і suggestTransfers
+  ✔ Σ балансів = 0 (I2); переказ зменшує борг (0.3505ms)
+  ✔ жадібний розрахунок обнуляє всі баланси, не більше n − 1 переказу (ADR-0011) (0.3708ms)
+✔ balances: computeBalances і suggestTransfers (0.8863ms)
+▶ idempotency: стани ключа
+  ✔ дубль, поки перший запит обробляється → IdempotencyInProgressError (409) (2.6196ms)
+  ✔ після успіху повтор отримує збережену відповідь (0.3633ms)
+  ✔ 5xx звільняє ключ: повтор виконується знову (0.2575ms)
+  ✔ покинутий in_progress ключ перезаймається після lease, не раніше (0.354ms)
+  ✔ завершений ключ lease не перезаймає: відповідь діє весь TTL (0.32ms)
+✔ idempotency: стани ключа (4.8374ms)
+▶ auth: адаптер Supabase
+  ✔ signup без сесії (увімкнено «Confirm email») → явна помилка конфігурації, не 2xx (22.9551ms)
+  ✔ signup: user_already_exists → EmailTakenError; інша 4xx → AuthRejectedError (9.3743ms)
+  ✔ 5xx і обрив з’єднання → AuthUnavailableError (503), а не 401 (8.9932ms)
+  ✔ 429 і не-JSON тіло → AuthUnavailableError, а не 401/400/500 (spec-fix-04, п. 5) (4.8078ms)
+  ✔ apikey передається в кожен запит; паролі не йдуть у query (2.1165ms)
+✔ auth: адаптер Supabase (54.2952ms)
+ℹ tests 17
+ℹ suites 5
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 289.7474
+
+> splittrip@0.1.0 test:api
+> node --test --test-timeout=120000 test/api/*.test.ts
+
+▶ auth: реєстрація й логін
+  ✔ signup → 201 з користувачем і токенами; email у нижньому регістрі (101.4289ms)
+  ✔ signup з зайнятим email → 409 email_taken (19.8669ms)
+  ✔ signup з некоректним email, коротким чи задовгим паролем → 400 (4.5474ms)
+  ✔ login → 200 і токен працює на /trips (41.2092ms)
+  ✔ невідомий email і хибний пароль — однаковий 401 (без перебору email) (38.6454ms)
+✔ auth: реєстрація й логін (373.0412ms)
+▶ auth: refresh і logout
+  ✔ refresh → нова пара токенів, новий access-токен працює (22.4436ms)
+  ✔ невідомий refresh-токен → 401 (1.0154ms)
+  ✔ logout → 204; після нього refresh-токен не діє (19.7921ms)
+  ✔ logout без токена → 401 (0.6441ms)
+✔ auth: refresh і logout (44.2247ms)
+▶ auth: доступ до /trips
+  ✔ без токена, з підробленим чи не-Bearer → 401 з WWW-Authenticate (20.3052ms)
+  ✔ прострочений токен → 401 (91.1596ms)
+  ✔ токен з правильними claims, підписаний чужим ключем → 401 (26.8576ms)
+✔ auth: доступ до /trips (138.6021ms)
+▶ доступ: чужа поїздка → 404 на кожен /trips/:id*
+  ✔ жоден ендпоінт не видає й не змінює чужу поїздку (24.5322ms)
+  ✔ GET /trips не показує чужих поїздок (4.7543ms)
+✔ доступ: чужа поїздка → 404 на кожен /trips/:id* (321.4089ms)
+▶ помилки й requestId
+  ✔ problem+json з requestId = X-Request-Id відповіді (1.3807ms)
+  ✔ X-Request-Id клієнта використовується; небезпечний — замінюється UUIDv7 (1.0101ms)
+  ✔ невідомий маршрут → 404 route_not_found; зламаний JSON → 400 (1.7369ms)
+  ✔ /health 200, /ready 200 на статиці, /version — без JWT (1.6393ms)
+✔ помилки й requestId (6.0686ms)
+▶ ідемпотентність POST /trips* (ADR-0019)
+  ✔ повтор із тим самим ключем → та сама відповідь і одна поїздка (4.2141ms)
+  ✔ без ключа POST виконується; ключ довший за 255 символів → 400 (spec-fix-01, п. 4) (1.8579ms)
+  ✔ той самий ключ з іншим тілом → 422 idempotency_key_reused (1.9799ms)
+  ✔ ключі ізольовані між користувачами (1.6002ms)
+  ✔ 4xx теж відтворюється: повтор не виконує операцію вдруге (3.3609ms)
+✔ ідемпотентність POST /trips* (ADR-0019) (13.4004ms)
+▶ логи (крит. 5, 6)
+  ✔ рядки роута, сервісу й сховища одного запиту мають той самий processId і userId (1.1982ms)
+  ✔ паролі й токени не потрапляють у логи (39.4314ms)
+✔ логи (крит. 5, 6) (40.7696ms)
+▶ паралельні зміни (крит. 7)
+  ✔ close і POST expenses одночасно: рівно одна операція успішна, стан узгоджений (36.4341ms)
+✔ паралельні зміни (крит. 7) (36.5806ms)
+▶ Idempotency-Key: збої сховища ключів
+  ✔ збій збереження відповіді після успіху → клієнт отримує оригінальний 201 (273.6287ms)
+  ✔ паралельний дубль (ключ in_progress) → 409 idempotency_in_progress (84.8547ms)
+✔ Idempotency-Key: збої сховища ключів (359.7415ms)
+﹣ N+1 (крит. 10) (0.4371ms) # лише для npm run test:api:db
+﹣ ретраї тимчасових помилок (крит. 8) (0.085ms) # лише для npm run test:api:db
+﹣ збій джерела під час роботи (крит. 9) (0.1173ms) # лише для npm run test:api:db
+﹣ /ready не висить на «завислій» БД (spec-fix-04, п. 6) (0.1149ms) # лише для npm run test:api:db
+﹣ fail-fast на старті (крит. 9) (0.0871ms) # лише для npm run test:api:db
+﹣ сховище напряму: повтори й покинуті ключі (spec-fix-04, п. 3–4) (0.0868ms) # лише для npm run test:api:db
+﹣ обмеження БД — друга лінія інваріантів (0.0865ms) # лише для npm run test:api:db
+▶ поїздки: створення, список, перегляд, видалення
+  ✔ POST /trips → 201 відкрита поїздка без учасників (6.528ms)
+  ✔ POST /trips з порожньою назвою, невідомою валютою чи зайвим полем → 400 (8.3441ms)
+  ✔ GET /trips — лише свої, новіші першими, з курсором (24.7923ms)
+  ✔ GET /trips з limit поза 1–100 чи некоректним курсором → 400 (3.3336ms)
+  ✔ GET /trips/:id → агрегат з учасниками, витратами й переказами (6.1635ms)
+  ✔ GET /trips/:id неіснуючої → 404; некоректний id → 400 (1.9251ms)
+  ✔ DELETE /trips/:id → 204 для відкритої й закритої; потім 404 (5.5837ms)
+  ✔ DELETE /trips/:id з учасниками, витратами й переказами → 204, каскадно (контракт) (4.9748ms)
+✔ поїздки: створення, список, перегляд, видалення (318.863ms)
+▶ учасники
+  ✔ додати → 201 з position за порядком; прибрати незгаданого → 204 (3.235ms)
+  ✔ порожнє ім’я → 400; неіснуючий учасник → 404 (2.749ms)
+  ✔ прибрати згаданого у витраті чи переказі → 409 participant_in_use (I5) (8.4802ms)
+✔ учасники (14.759ms)
+▶ витрати
+  ✔ поділ порівну: залишкові копійки — першим за порядком додавання (ADR-0010) (3.8145ms)
+  ✔ точні частки; платник може не входити в поділ (2.6498ms)
+  ✔ частки exact — за порядком додавання учасників, як у БД (spec-fix-02, п. 2) (3.5744ms)
+  ✔ порівну, менше копійки на учасника → 422 share_too_small (spec-fix-04, п. 1) (3.4298ms)
+  ✔ Σ часток ≠ сумі → 422 shares_sum_mismatch (I1) (2.1785ms)
+  ✔ чужий учасник (платник чи частка) → 422 unknown_participant (I3) (4.3901ms)
+  ✔ дубль учасника в поділі → 422 duplicate_participant (2.1368ms)
+  ✔ некоректна форма: сума 0, дробова, рядком, булева; невідомий mode → 400 (5.4072ms)
+  ✔ PUT → 200, частки перераховано; неіснуюча витрата → 404 (5.8699ms)
+  ✔ DELETE → 204; повторно → 404 (3.9008ms)
+✔ витрати (37.8136ms)
+▶ перекази, баланси, розрахунок, закриття
+  ✔ сценарій повністю: витрата → баланси → пропозиції → перекази → закриття (9.079ms)
+  ✔ переказ сам собі → 422; чужому → 422; неіснуючий → 404 при видаленні (3.756ms)
+  ✔ помилковий переказ видаляється → 204; переплата лише змінює баланс (4.4347ms)
+  ✔ закрита поїздка не змінюється: кожна зміна → 409 trip_closed (I4) (6.3887ms)
+✔ перекази, баланси, розрахунок, закриття (23.9042ms)
+ℹ tests 53
+ℹ suites 20
+ℹ pass 53
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 993.5281
+[код виходу: 0]
