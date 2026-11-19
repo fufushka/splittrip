@@ -1,0 +1,6 @@
+1. Усі пороги в check (Recommended)
+2. Червоний тест → фікс (Recommended)
+3. Уточнити unit (Recommended)
+4. Наявних достатньо (Recommended)
+5. Так, вручну як C12 (Recommended)
+6. Звіт з падінням (Recommended)
