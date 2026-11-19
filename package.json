@@ -23,7 +23,7 @@
     "db:start": "node scripts/db-start.ts",
     "db:stop": "supabase stop",
     "db:migrate": "node scripts/db-migrate.ts",
-    "test:unit": "node --test --test-timeout=60000 test/unit/*.test.ts",
+    "test:unit": "node --test --test-timeout=60000 --experimental-test-coverage --test-coverage-include=src/modules/balances/index.ts test/unit/*.test.ts",
     "hygiene": "node scripts/check-hygiene.ts",
     "commit-msg": "node scripts/check-commit-msg.ts",
     "ai-trace": "node scripts/ai-trace.ts",
