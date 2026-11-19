@@ -15,12 +15,13 @@
 |---|---|
 | 1 — фундамент і структура | [DEFENSE.md](docs/specs/lab1-foundation/DEFENSE.md) |
 | 2 — HTTP API і база даних | [DEFENSE.md](docs/specs/lab2-api-db/DEFENSE.md) |
+| 3 — тестування | [DEFENSE.md](docs/specs/lab3-testing/DEFENSE.md) |
 
 ## Вимоги
 
 - **Node.js ≥ 24** — <https://nodejs.org>.
 - **git** — hook-и й визначення версії.
-- **Docker** — лише для роботи з БД: локальний Supabase (`npm run db:start`).
+- **Docker** — для роботи з БД (локальний Supabase, `npm run db:start`) і для `npm test`.
 
 ## Запуск
 
@@ -28,7 +29,7 @@
 git clone https://github.com/fufushka/splittrip.git
 cd splittrip
 npm ci          # залежності + автоматичне підключення git-hook-ів
-npm run check   # усі перевірки: формат, лінт, чистота, типи, межі, збірка, smoke
+npm run check   # усі перевірки: формат, лінт, чистота, типи, межі, збірка, smoke, тести, покриття
 ```
 
 `npm run check` на чистому клоні має пройти без інших кроків.
@@ -39,8 +40,11 @@ npm run check   # усі перевірки: формат, лінт, чисто�
 | `npm run check` | Запускає перевірки з [standarts/checks.md](standarts/checks.md) |
 | `npm run format` | Форматує код |
 | `npm run smoke` | Збирає застосунок і запускає smoke-тест |
-| `npm run test:unit` | Модульні тести чистих модулів (`ids`, `money`, `balances`) |
+| `npm test` | Усі рівні тестів однією командою (C14, потрібен Docker); `-- --report` → `reports/npm-test.txt` лаби 3 |
+| `npm run test:unit` | Unit-тести `test/unit/` (`ids`, `money`, `balances`, `idempotency`, Auth на фейку) і покриття `balances` від них |
 | `npm run test:api` | API-тести всіх сценаріїв на `STORAGE=memory` (C11) |
+| `npm run coverage` | Unit + API на `memory` з покриттям і пороги гілок на файл (C13) |
+| `npm run mutation [-- before\|after]` | Мутації Stryker (C15); з `before`/`after` — звіт `reports/mutation-<arg>.txt` лаби 3 |
 | `npm run db:start` / `db:stop` | Локальний Supabase у Docker: Postgres `54322`, API `54321` |
 | `npm run db:migrate` | Міграції `db/migrations/` на `DATABASE_URL` (типово — локальний Supabase) |
 | `npm run test:api:db` | Ті самі API-тести + тести БД на `STORAGE=postgres` в окремій базі `run_<id>` (C12) |
@@ -68,6 +72,38 @@ npm run test:api:db     # база run_<id> → міграції → тести 
 вимкнено «Confirm email» (Authentication → Sign In / Providers → Email) — підтвердження email
 поза обсягом ([spec-fix-03](docs/specs/lab2-api-db/spec-fix-03.md)).
 
+## Тести
+
+Рівні — [spec лаби 3](docs/specs/lab3-testing/spec.md), розд. «Рівні тестів»; рішення —
+мутації [ADR-0022](docs/adr/0022-stryker-tap-runner.md), покриття
+[ADR-0023](docs/adr/0023-builtin-coverage-per-file.md), `npm test`
+[ADR-0024](docs/adr/0024-npm-test-orchestrator.md).
+
+| Рівень | Що перевіряє | Тека | Команда |
+|---|---|---|---|
+| Unit | Модуль без справжніх БД і Supabase; фейк у процесі тесту дозволений | `test/unit/` | `npm run test:unit` |
+| API на `memory` (не рівень) | `app.inject`, сховище в пам'яті, фейковий Auth | `test/api/` | `npm run test:api` (C11) |
+| Інтеграційні | Ті самі тести на справжніх Postgres (`run_<id>`) і Supabase Auth | `test/api/` | `npm run test:api:db` (C12), `npm test` |
+| E2E | Зібраний `dist/main.js` окремим процесом, справжні БД і Auth, `fetch` | `test/e2e/` | лише `npm test` |
+
+```sh
+npm test                    # Docker → Supabase → run_<id> → unit → інтеграційні → E2E → пороги
+npm test -- --report        # те саме + вивід у docs/specs/lab3-testing/reports/npm-test.txt
+npm run coverage            # пороги гілок на unit + API на memory, без Docker
+npm run mutation -- before  # Stryker; звіт «до» (after — «після»)
+```
+
+- `npm test` піднімає Supabase, якщо його не запущено, і не зупиняє після прогону; базу
+  `run_<id>` і застосунок прибирає й після падіння етапу. Без Docker — код ≠ 0 до тестів.
+- E2E окремо не запускаються: адресу застосунку (`E2E_BASE_URL`) дає `npm test`.
+- Покриття — вбудоване в Node; пороги гілок: ≥ 90% на `money`, `trips/domain`,
+  `trips/service`, `idempotency` і 100% на `balances`. У check і pre-push — на unit + API на
+  `memory`, у `npm test` — на unit + інтеграційних.
+- Мутації — `money`, `balances` (`break` 100%), `trips/domain`, `trips/service` проти unit +
+  API на `memory`, без Docker. Аналіз вижилих —
+  [mutation-analysis.md](docs/specs/lab3-testing/reports/mutation-analysis.md).
+- `npm test` і `npm run mutation` — вручну перед здачею, у hook-и не входять (C14, C15).
+
 ## Git-hook-и
 
 Hook-и підключаються під час `npm ci` (скрипт `prepare`). Кожен лише викликає `npm run …` ([ADR-0014](docs/adr/0014-npm-scripts-over-makefile.md)).
@@ -76,7 +112,7 @@ Hook-и підключаються під час `npm ci` (скрипт `prepare
 |---|---|---|
 | pre-commit | `npm run pre-commit` | формат, лінт (лише доданих файлів) або чистота репо не проходять |
 | commit-msg | `npm run commit-msg` | повідомлення не за [standarts/commits.md](standarts/commits.md) |
-| pre-push | `npm run pre-push` | типи, межі модулів, збірка або smoke не проходять |
+| pre-push | `npm run pre-push` | типи, межі модулів, збірка, smoke, unit- чи API-тести (C11) або пороги покриття (`npm run coverage`, C13) не проходять |
 
 ## Залежності
 
@@ -106,9 +142,10 @@ src/main.ts            точка входу процесу
 src/compose.ts         composition root: сховище, Auth, сервіси, сервер (ADR-0016)
 src/modules/<модуль>/  вхід — index.ts; перелік і межі — architecture.md лаби 2
 test/smoke/            smoke-тест зібраного застосунку
-test/unit/             модульні тести чистих модулів
+test/unit/             unit-тести: без справжніх БД і Supabase, фейки в процесі
 test/api/              API-тести сценаріїв (memory, з лаби 2 — і postgres)
-scripts/               власні перевірки C3, C4, C9
+test/e2e/              E2E зібраного застосунку через fetch; запускає npm test
+scripts/               перевірки C3, C4, C9, C13; npm test; база run_<id>; мутації; db-скрипти
 standarts/             інженерні стандарти проєкту
 docs/adr/              архітектурні рішення (MADR)
 docs/specs/labN-*/     spec, spec-fix, архітектура, аудит, DEFENSE і звіти лаби
