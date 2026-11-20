@@ -1,8 +1,10 @@
 /**
- * Відтворювана демонстрація конвеєра (лаба 1, крит. 5, 7, 10; лаба 2, крит. 3, 4; C11): у тимчасовому клоні HEAD
- * запускає `npm ci` + `npm run check`, робить брудний коміт, коміт із поганим повідомленням,
- * пуші зі зламаною збіркою та smoke і порушення меж модулів. Реальний вивід кожного
- * сценарію пише в docs/specs/lab2-api-db/reports/. Робочу копію не змінює.
+ * Відтворювана демонстрація конвеєра (C10; лаба 1, крит. 5, 7, 10; лаба 2, крит. 3, 4; C11;
+ * лаба 3, крит. 5, C13): у тимчасовому клоні HEAD запускає `npm ci` + `npm run check`, робить
+ * брудний коміт, коміт із поганим повідомленням, пуші зі зламаною збіркою та smoke, порушення
+ * меж модулів і вимикає unit-тест `balances`, щоб `npm run check` упав на порозі покриття.
+ * Реальний вивід кожного сценарію пише в docs/specs/lab3-testing/reports/ (ai/lab3/012, п. 3).
+ * Робочу копію не змінює.
  */
 import { spawnSync } from 'node:child_process';
 import {
@@ -17,7 +19,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const REPORTS = join(process.cwd(), 'docs/specs/lab2-api-db/reports');
+const REPORTS = join(process.cwd(), 'docs/specs/lab3-testing/reports');
 const ENV = { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' };
 
 interface Result {
@@ -45,17 +47,39 @@ function edit(file: string, change: (text: string) => string): void {
   writeFileSync(file, after);
 }
 
+/**
+ * Вимикає єдиний тест `it('…<name>…')`: `it(` → `void it.skip(`. `void` потрібен, бо ESLint
+ * дозволяє непочеканий проміс лише для `it` з `node:test`, а не для `it.skip` (інакше check
+ * упав би на C2). Немає такого тесту або їх кілька — помилка сценарію («не вдалося
+ * перевірити»), а не тихий успіх (checks.md: помилка інструмента = провал).
+ */
+function skipTest(file: string, name: string): void {
+  const pattern = new RegExp(`^([ \\t]*)it\\((\\s*['"\`][^'"\`]*${name})`, 'gm');
+  const found = [...readFileSync(file, 'utf8').matchAll(pattern)].length;
+  if (found !== 1)
+    throw new Error(
+      `Сценарій не застосовано: у ${file} тестів «${name}» — ${String(found)}, потрібен рівно один`,
+    );
+  edit(file, (t) => t.replace(pattern, '$1void it.skip($2'));
+}
+
+/** `expectOutput` — рядок, що має бути у виводі: відмова саме цієї перевірки, а не раніше. */
 function report(
   name: string,
   title: string,
   expectFail: boolean,
   results: readonly Result[],
+  expectOutput?: RegExp,
 ): void {
   const failed = results.some((r) => r.code !== 0);
-  const verdict = expectFail === failed ? 'OK' : 'НЕОЧІКУВАНО';
+  const shown = expectOutput === undefined || results.some((r) => expectOutput.test(r.output));
+  const verdict = expectFail === failed && shown ? 'OK' : 'НЕОЧІКУВАНО';
+  const expected =
+    (expectFail ? 'відмова' : 'успіх') +
+    (expectOutput === undefined ? '' : `, у виводі ${String(expectOutput)}`);
   const body = [
     `# Відтворити: npm run demo (сценарій «${title}»)`,
-    `# Очікування: ${expectFail ? 'відмова' : 'успіх'}; результат: ${verdict}`,
+    `# Очікування: ${expected}; результат: ${verdict}`,
     `# HEAD: ${head}`,
     '',
     ...results.flatMap((r) => [`$ ${r.command}`, r.output, `[код виходу: ${String(r.code)}]`, '']),
@@ -69,11 +93,11 @@ const head = run('git rev-parse HEAD', process.cwd()).output;
 const root = mkdtempSync(join(tmpdir(), 'splittrip-demo-'));
 const repo = join(root, 'repo');
 const remote = join(root, 'remote.git');
-// Прибираємо лише власні старі звіти (01–08): у reports/ лаби 2 лежать і звіти інших
-// команд (report:db, cloud-run), яких demo не відтворює.
+// Прибираємо лише власні старі звіти (01–09): у reports/ лаби 3 лежать і звіти інших
+// команд (npm test, mutation), яких demo не відтворює. Звіти лаби 2 не чіпаємо.
 mkdirSync(REPORTS, { recursive: true });
 for (const name of readdirSync(REPORTS)) {
-  if (/^0[1-8][a-z]?-.*\.txt$/.test(name)) rmSync(join(REPORTS, name));
+  if (/^0[1-9][a-z]?-.*\.txt$/.test(name)) rmSync(join(REPORTS, name));
 }
 
 try {
@@ -247,6 +271,19 @@ try {
     brokenApi,
     run(`git push "${remote}" HEAD:refs/heads/demo-api`, repo),
   ]);
+
+  // 9. Поріг покриття (лаба 3, крит. 5; C13): вимкнено unit-тест «платник поза списком
+  // учасників» — єдиний, що покриває `totals.get(id) ?? ZERO` у `shift` (через API туди не
+  // дійти: 422). check проходить попередні кроки й падає саме на `npm run coverage`.
+  reset();
+  skipTest(file('test/unit/balances.test.ts'), 'платник поза списком учасників');
+  report(
+    '09-coverage-threshold-rejected',
+    'вимкнений unit-тест balances валить поріг покриття в check',
+    true,
+    [run('npm run check', repo)],
+    /balances\/index\.ts .*· НИЖЧЕ/,
+  );
 } finally {
   rmSync(root, { recursive: true, force: true, maxRetries: 3 });
 }

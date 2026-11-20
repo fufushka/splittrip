@@ -1,0 +1,402 @@
+# Відтворити: npm run mutation -- after
+# HEAD: ca177ca4ca024e1516ce29eb1030e55513f5fa18
+# Код виходу: 0
+
+$ npx stryker run stryker.balances.config.js
+01:32:09 (17120) INFO ProjectReader Found 1 of 297 file(s) to be mutated.
+01:32:09 (17120) INFO Instrumenter Instrumented 1 source file(s) with 54 mutant(s)
+01:32:09 (17120) INFO ConcurrencyTokenProvider Creating 6 checker process(es) and 5 test runner process(es).
+01:32:20 (17120) INFO DryRunExecutor Starting initial test run (tap test runner with "perTest" coverage analysis). This may take a while.
+01:32:26 (17120) INFO DryRunExecutor Initial test run succeeded. Ran 14 tests in 5 seconds (net 2298.1292999999996 ms, overhead 3386.8707000000004 ms).
+
+All tests
+  api
+    auth.test.ts
+      ✘ test/api/auth.test.ts (covered 0)
+    cross-cutting.test.ts
+      ~ test/api/cross-cutting.test.ts (covered 14)
+    idempotency-faults.test.ts
+      ✘ test/api/idempotency-faults.test.ts (covered 0)
+    postgres.test.ts
+      ✘ test/api/postgres.test.ts (covered 0)
+    trips.test.ts
+      ~ test/api/trips.test.ts (covered 50)
+  unit
+    balances.test.ts
+      ✓ test/unit/balances.test.ts (killed 5)
+    domain.test.ts
+      ✓ test/unit/domain.test.ts (killed 16)
+    idempotency.test.ts
+      ✘ test/unit/idempotency.test.ts (covered 0)
+    supabase-auth.test.ts
+      ✘ test/unit/supabase-auth.test.ts (covered 0)
+    trips-balances-order.test.ts
+      ~ test/unit/trips-balances-order.test.ts (covered 6)
+    trips-participant-in-use.test.ts
+      ✘ test/unit/trips-participant-in-use.test.ts (covered 0)
+    trips-remove-expense.test.ts
+      ✘ test/unit/trips-remove-expense.test.ts (covered 0)
+    trips-remove-participant.test.ts
+      ✘ test/unit/trips-remove-participant.test.ts (covered 0)
+    trips-remove-transfer.test.ts
+      ✘ test/unit/trips-remove-transfer.test.ts (covered 0)
+
+Ran 0.48 tests per mutant on average.
+----------|------------------|----------|-----------|------------|----------|----------|
+          | % Mutation score |          |           |            |          |          |
+File      |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+----------|--------|---------|----------|-----------|------------|----------|----------|
+All files | 100.00 |  100.00 |       21 |         5 |          0 |        0 |       24 |
+ index.ts | 100.00 |  100.00 |       21 |         5 |          0 |        0 |       24 |
+----------|--------|---------|----------|-----------|------------|----------|----------|
+01:32:37 (17120) INFO MutationTestReportHelper Final mutation score of 100.00 is greater than or equal to break threshold 100
+01:32:37 (17120) INFO HtmlReporter Your report can be found at: file:///C:/Users/dimau/OneDrive/Desktop/nodejs/splittrip/.claude/worktrees/track-a/coverage/mutation/balances.html
+01:32:37 (17120) INFO MutationTestExecutor Done in 29 seconds.
+[код виходу: 0]
+
+$ npx stryker run stryker.config.js
+01:32:42 (31488) INFO ProjectReader Found 3 of 297 file(s) to be mutated.
+01:32:42 (31488) INFO Instrumenter Instrumented 3 source file(s) with 305 mutant(s)
+01:32:42 (31488) INFO ConcurrencyTokenProvider Creating 6 checker process(es) and 5 test runner process(es).
+01:32:52 (31488) INFO DryRunExecutor Starting initial test run (tap test runner with "perTest" coverage analysis). This may take a while.
+01:32:58 (31488) INFO DryRunExecutor Initial test run succeeded. Ran 14 tests in 5 seconds (net 2235.9647 ms, overhead 3585.0353 ms).
+
+All tests
+  api
+    auth.test.ts
+      ~ test/api/auth.test.ts (covered 7)
+    cross-cutting.test.ts
+      ✓ test/api/cross-cutting.test.ts (killed 1)
+    idempotency-faults.test.ts
+      ~ test/api/idempotency-faults.test.ts (covered 15)
+    postgres.test.ts
+      ✘ test/api/postgres.test.ts (covered 0)
+    trips.test.ts
+      ✓ test/api/trips.test.ts (killed 140)
+  unit
+    balances.test.ts
+      ~ test/unit/balances.test.ts (covered 8)
+    domain.test.ts
+      ✓ test/unit/domain.test.ts (killed 6)
+    idempotency.test.ts
+      ✘ test/unit/idempotency.test.ts (covered 0)
+    supabase-auth.test.ts
+      ✘ test/unit/supabase-auth.test.ts (covered 0)
+    trips-balances-order.test.ts
+      ✓ test/unit/trips-balances-order.test.ts (killed 2)
+    trips-participant-in-use.test.ts
+      ✓ test/unit/trips-participant-in-use.test.ts (killed 3)
+    trips-remove-expense.test.ts
+      ✓ test/unit/trips-remove-expense.test.ts (killed 2)
+    trips-remove-participant.test.ts
+      ✓ test/unit/trips-remove-participant.test.ts (killed 12)
+    trips-remove-transfer.test.ts
+      ✓ test/unit/trips-remove-transfer.test.ts (killed 6)
+
+[Survived] StringLiteral
+src/modules/money/index.ts:16:26
+-       throw new RangeError(`Гроші — цілі копійки, отримано ${String(value)}`);
++       throw new RangeError(``);
+Tests ran:
+    test/unit/domain.test.ts
+
+
+[Survived] StringLiteral
+src/modules/money/index.ts:39:26
+-       throw new RangeError(`Кількість часток — ціле ≥ 1, отримано ${String(parts)}`);
++       throw new RangeError(``);
+Tests ran:
+    test/unit/domain.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:34:44
+-       throw new ConflictError('trip_closed', 'Закрита поїздка не змінюється (I4)');
++       throw new ConflictError('trip_closed', "");
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:41:54
+-       throw new DomainRuleError('unknown_participant', `${role} ${id} — не учасник поїздки (I3)`);
++       throw new DomainRuleError('unknown_participant', ``);
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:48:56
+-       throw new DomainRuleError('duplicate_participant', 'Учасник у поділі — не більше одного разу');
++       throw new DomainRuleError('duplicate_participant', "");
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:61:54
+-       throw new NotFoundError('participant_not_found', `Учасника ${participantId} немає`);
++       throw new NotFoundError('participant_not_found', ``);
+Tests ran:
+    test/api/trips.test.ts
+    test/unit/trips-remove-participant.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:68:51
+-       throw new ConflictError('participant_in_use', 'Учасник згаданий у витраті чи переказі (I5)');
++       throw new ConflictError('participant_in_use', "");
+Tests ran:
+    test/api/trips.test.ts
+    test/unit/trips-participant-in-use.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:79:42
+-         .map((id) => participant(trip, id, 'Учасник поділу'))
++         .map((id) => participant(trip, id, ""))
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+    test/unit/trips-remove-participant.test.ts
+  and 2 more tests!
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:85:9
+-           `${String(input.amount)} коп. не поділити на ${String(ordered.length)} учасників`,
++           ``,
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:95:42
+-         participant(trip, s.participantId, 'Учасник поділу').position,
++         participant(trip, s.participantId, "").position,
+Tests ran:
+    test/api/trips.test.ts
+    test/unit/trips-participant-in-use.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:99:54
+-       throw new DomainRuleError('shares_sum_mismatch', 'Σ часток має дорівнювати сумі витрати (I1)');
++       throw new DomainRuleError('shares_sum_mismatch', "");
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:108:36
+-     participant(trip, input.payerId, 'Платник');
++     participant(trip, input.payerId, "");
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+    test/unit/trips-remove-participant.test.ts
+  and 2 more tests!
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:126:50
+-       throw new NotFoundError('expense_not_found', `Витрати ${expenseId} немає`);
++       throw new NotFoundError('expense_not_found', ``);
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:146:51
+-       throw new DomainRuleError('same_participant', 'Відправник і отримувач — різні учасники');
++       throw new DomainRuleError('same_participant', "");
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:148:35
+-     participant(trip, input.fromId, 'Відправник');
++     participant(trip, input.fromId, "");
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+    test/unit/trips-remove-transfer.test.ts
+  and 2 more tests!
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:149:33
+-     participant(trip, input.toId, 'Отримувач');
++     participant(trip, input.toId, "");
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+    test/unit/trips-remove-transfer.test.ts
+  and 2 more tests!
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:157:51
+-       throw new NotFoundError('transfer_not_found', `Переказу ${transferId} немає`);
++       throw new NotFoundError('transfer_not_found', ``);
+Tests ran:
+    test/api/trips.test.ts
+    test/unit/trips-remove-transfer.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/domain.ts:177:53
+-       throw new ConflictError('balances_not_settled', 'Закрити можна лише за нульових балансів');
++       throw new ConflictError('balances_not_settled', "");
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[NoCoverage] StringLiteral
+src/modules/trips/service.ts:53:43
+-     if (item === undefined) throw new Error(`Інваріант: ${id} мав з'явитися в агрегаті`);
++     if (item === undefined) throw new Error(``);
+
+[Survived] ObjectLiteral
+src/modules/trips/service.ts:98:16
+-         log.info({ tripId }, 'trip deleted');
++         log.info({}, 'trip deleted');
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:46:47
+-       throw new NotFoundError('trip_not_found', `Поїздки ${tripId} немає`);
++       throw new NotFoundError('trip_not_found', ``);
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:98:28
+-         log.info({ tripId }, 'trip deleted');
++         log.info({ tripId }, "");
+Tests ran:
+    test/api/trips.test.ts
+
+
+[Survived] ObjectLiteral
+src/modules/trips/service.ts:67:14
+-       log.info({ tripId, op }, 'trip changed');
++       log.info({}, 'trip changed');
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:67:30
+-       log.info({ tripId, op }, 'trip changed');
++       log.info({ tripId, op }, "");
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:103:41
+-         const trip = await change(tripId, 'addParticipant', (t) =>
++         const trip = await change(tripId, "", (t) =>
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] ObjectLiteral
+src/modules/trips/service.ts:87:16
+-         log.info({ tripId: trip.id }, 'trip created');
++         log.info({}, 'trip created');
+Tests ran:
+    test/api/trips.test.ts
+    test/api/idempotency-faults.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:110:28
+-         await change(tripId, 'removeParticipant', (t) => domain.removeParticipant(t, participantId));
++         await change(tripId, "", (t) => domain.removeParticipant(t, participantId));
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:115:41
+-         const trip = await change(tripId, 'addExpense', (t) => domain.addExpense(t, id, input));
++         const trip = await change(tripId, "", (t) => domain.addExpense(t, id, input));
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:120:41
+-         const trip = await change(tripId, 'replaceExpense', (t) =>
++         const trip = await change(tripId, "", (t) =>
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:127:28
+-         await change(tripId, 'removeExpense', (t) => domain.removeExpense(t, expenseId));
++         await change(tripId, "", (t) => domain.removeExpense(t, expenseId));
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:132:41
+-         const trip = await change(tripId, 'addTransfer', (t) => domain.addTransfer(t, id, input));
++         const trip = await change(tripId, "", (t) => domain.addTransfer(t, id, input));
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:137:28
+-         await change(tripId, 'removeTransfer', (t) => domain.removeTransfer(t, transferId));
++         await change(tripId, "", (t) => domain.removeTransfer(t, transferId));
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+[Survived] StringLiteral
+src/modules/trips/service.ts:146:29
+-         return change(tripId, 'close', (t) => domain.closeTrip(t, closedAt));
++         return change(tripId, "", (t) => domain.closeTrip(t, closedAt));
+Tests ran:
+    test/api/trips.test.ts
+    test/api/cross-cutting.test.ts
+
+
+Ran 0.95 tests per mutant on average.
+-------------|------------------|----------|-----------|------------|----------|----------|
+             | % Mutation score |          |           |            |          |          |
+File         |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+-------------|--------|---------|----------|-----------|------------|----------|----------|
+All files    |  83.90 |   84.31 |      172 |         0 |         32 |        1 |      100 |
+ money       |  91.67 |   91.67 |       22 |         0 |          2 |        0 |        7 |
+  index.ts   |  91.67 |   91.67 |       22 |         0 |          2 |        0 |        7 |
+ trips       |  82.87 |   83.33 |      150 |         0 |         30 |        1 |       93 |
+  domain.ts  |  89.74 |   89.74 |      140 |         0 |         16 |        0 |       55 |
+  service.ts |  40.00 |   41.67 |       10 |         0 |         14 |        1 |       38 |
+-------------|--------|---------|----------|-----------|------------|----------|----------|
+01:34:27 (31488) INFO HtmlReporter Your report can be found at: file:///C:/Users/dimau/OneDrive/Desktop/nodejs/splittrip/.claude/worktrees/track-a/coverage/mutation/domain.html
+01:34:27 (31488) INFO MutationTestExecutor Done in 1 minute and 45 seconds.
+[код виходу: 0]

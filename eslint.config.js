@@ -4,7 +4,7 @@ import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  { ignores: ['dist/', 'coverage/'] },
+  { ignores: ['dist/', 'coverage/', '.stryker-tmp/'] },
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,

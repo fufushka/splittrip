@@ -325,7 +325,7 @@ describe('витрати', () => {
     assertProblem(res, 400, 'validation_failed');
   });
 
-  it('PUT → 200, частки перераховано; неіснуюча витрата → 404', async () => {
+  it('PUT → 200, частки перераховано, інша витрата без змін; неіснуюча → 404', async () => {
     const id = await trip();
     const a = await participant(id, 'Аня');
     const b = await participant(id, 'Богдан');
@@ -334,7 +334,15 @@ describe('витрати', () => {
       amount: 100,
       split: { mode: 'equal', participantIds: [a] },
     });
+    // Топ-2: мутант #36 — `e.id === expenseId ? next : e` → `true ? next : e` (рядок 134).
+    const other = await as('POST', `/trips/${id}/expenses`, {
+      payerId: b,
+      amount: 300,
+      split: { mode: 'equal', participantIds: [a, b] },
+    });
+    assert.equal(other.status, 201, other.text);
     const eid = field<string>(created, 'id');
+    const otherId = field<string>(other, 'id');
     const res = await as('PUT', `/trips/${id}/expenses/${eid}`, {
       payerId: b,
       amount: 301,
@@ -346,6 +354,17 @@ describe('витрати', () => {
     assert.deepEqual(field(res, 'shares'), [
       { participantId: a, amount: 151 },
       { participantId: b, amount: 150 },
+    ]);
+    const expenses = field<{ id: string }[]>(await as('GET', `/trips/${id}`), 'expenses');
+    assert.deepEqual(expenses.map((e) => e.id).sort(), [eid, otherId].sort());
+    assert.deepEqual(
+      expenses.find((e) => e.id === otherId),
+      other.body,
+    );
+    // Аня: −151 − 150; Богдан: +301 − 150 + 300 − 150.
+    assert.deepEqual(field(await as('GET', `/trips/${id}/balances`), 'balances'), [
+      { participantId: a, amount: -301 },
+      { participantId: b, amount: 301 },
     ]);
     const missing = await as('PUT', `/trips/${id}/expenses/${NO_SUCH}`, {
       payerId: a,
@@ -449,12 +468,17 @@ describe('перекази, баланси, розрахунок, закритт
   it('закрита поїздка не змінюється: кожна зміна → 409 trip_closed (I4)', async () => {
     const id = await trip();
     const a = await participant(id, 'Аня');
+    const b = await participant(id, 'Богдан');
     const expense = await as('POST', `/trips/${id}/expenses`, {
       payerId: a,
       amount: 100,
-      split: { mode: 'equal', participantIds: [a] },
+      split: { mode: 'equal', participantIds: [a, b] },
     });
     const eid = field<string>(expense, 'id');
+    // Топ-3: мутант #42 — у `removeTransfer` прибрано `assertOpen(trip)` (рядок 155).
+    const transfer = await as('POST', `/trips/${id}/transfers`, { fromId: b, toId: a, amount: 50 });
+    assert.equal(transfer.status, 201, transfer.text);
+    const tid = field<string>(transfer, 'id');
     assert.equal((await as('POST', `/trips/${id}/close`)).status, 200);
 
     const body = { payerId: a, amount: 1, split: { mode: 'equal', participantIds: [a] } };
@@ -465,10 +489,16 @@ describe('перекази, баланси, розрахунок, закритт
       ['PUT', `/trips/${id}/expenses/${eid}`, body],
       ['DELETE', `/trips/${id}/expenses/${eid}`, undefined],
       ['POST', `/trips/${id}/transfers`, { fromId: a, toId: a, amount: 1 }],
+      ['DELETE', `/trips/${id}/transfers/${tid}`, undefined],
       ['POST', `/trips/${id}/close`, undefined],
     ];
     for (const [method, url, payload] of attempts) {
       assertProblem(await as(method, url, payload), 409, 'trip_closed');
     }
+    assert.deepEqual(field(await as('GET', `/trips/${id}`), 'transfers'), [transfer.body]);
+    assert.deepEqual(field(await as('GET', `/trips/${id}/balances`), 'balances'), [
+      { participantId: a, amount: 0 },
+      { participantId: b, amount: 0 },
+    ]);
   });
 });
